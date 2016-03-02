@@ -20,15 +20,22 @@ NUMBER = r'''
             \d+
           )
           '''
-QUOTED = r'''
-          '
-          (?:
-            [^'\\]
-            |
-            \\'
-          )*
-          '
-          '''
+STR = r'''
+       (?:
+         '
+         (?P<__str__>
+             [^'\\]
+             |
+             \\'
+         )*
+         '
+       )|(?:
+         \
+         (?P<__str__>
+           .
+         )
+       )
+       '''
 OPERATORS = {
     # Arithmetic
     '+': operator.__add__,
@@ -52,7 +59,7 @@ OPERATORS = {
 OPERATOR = r'(?:' + '|'.join(map(regex.escape, OPERATORS)) + r')'
 APPLY = r'\$'
 SPACE = r'\s+'
-IMMEDIATE = r'(?P<quoted>' + QUOTED + r')|' \
+IMMEDIATE = r'(?P<str>' + STR + r')|' \
             r'(?P<operator>' + OPERATOR + r')|' \
             r'(?P<apply>' + APPLY + r')|' \
             r'(?P<space>' + SPACE + r')'
