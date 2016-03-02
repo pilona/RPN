@@ -65,20 +65,37 @@ FLAGS = reduce(operator.__or__,
                 regex.VERBOSE},
                0)
 
-for line in stdin:
-    start = 0
-    while start < len(line):
-        line = line[start:]
+
+def lex(line):
+    while line:
         match = regex.match(LEXEME, line, flags=FLAGS)
         if match is None:
             break
-        matched = match.group(0)
-        groups = match.groupdict()
-        if groups.pop('immediate', None) is not None:
-            print('immediate', end=' ')
-        print(*[key
-                for key, value
-                in groups.items()
-                if value],
-              repr(matched))
-        start = len(matched)
+        yield match
+        line = line[len(match.group(0)):]
+
+
+def isimmediate(match):
+    return 'immediate' in match.groupdict()
+
+
+def matchedgroups(match):
+    return {key:value
+            for key, value
+            in match.groupdict().items()
+            if value and key != 'immediate'}
+
+
+def dumper():
+    for line in stdin:
+        for match in lex(line):
+            if isimmediate(match):
+                print('immediate', end=' ')
+            matched = match.group(0)
+            groups = matchedgroups(match).keys()
+            print(*groups,
+                  repr(matched))
+
+
+if __name__ == '__main__':
+    dumper()
