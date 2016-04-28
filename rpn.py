@@ -373,7 +373,7 @@ def matchedgroups(match):
 
 def dumper():
     machine = Machine()
-    print('[groups] <repr(repr)> <arity>')
+    print('[groups]\t<repr(repr)>\t<arity>')
     for line in stdin:
         for match in Lexer.lex(line):
             matched = match.group(0)
@@ -381,7 +381,8 @@ def dumper():
             parsed = next(machine.parse(match), None)
             print(*groups,
                   repr(matched),
-                  machine._arity(parsed))
+                  machine._arity(parsed),
+                  sep='\t')
 
 
 def executor():
