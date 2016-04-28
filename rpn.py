@@ -316,7 +316,7 @@ class Lexer:
            )
            '''
 
-    OPERATOR = r'(?:' + '|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
+    OPERATOR = r'(?:' + r'|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
     # TODO: a and A instead? Would make this no longer a special case, which is
     # kinda nice.
     APPLY = r'\$'
