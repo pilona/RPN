@@ -373,7 +373,7 @@ def matchedgroups(match):
 
 def dumper():
     machine = Machine()
-    print('(<immediate?>) [groups] <repr> <arity>')
+    print('(<immediate?>) [groups] <repr(repr)> <arity>')
     for line in stdin:
         for match in Lexer.lex(line):
             if isimmediate(match):
