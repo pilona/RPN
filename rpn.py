@@ -159,7 +159,7 @@ class Machine:
         elif 'number' in groups:
             yield self.ifmt(groups['number'])
         elif 'operator' in groups:
-            yield Machine.OPERATORS[groups['operator']]
+            yield type(self).OPERATORS[groups['operator']]
         elif 'apply' in groups:
             yield self.apply
 
@@ -177,7 +177,7 @@ class Machine:
 
     def apply(self):
         f = self._popstack()[0]
-        self._apply(Machine.NAMESPACE[f])
+        self._apply(type(self).NAMESPACE[f])
 
     def _apply(self, parsed):
         if parsed in type(self).FUNCTIONS.values():
@@ -242,8 +242,8 @@ class Machine:
         self.current.rotate(n)
 
     def printhelp(self):
-        print('functions:', *sorted(Machine.NAMESPACE), file=stderr)
-        print('operators:', *sorted(Machine.OPERATORS), file=stderr)
+        print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
+        print('operators:', *sorted(type(self).OPERATORS), file=stderr)
 
     def load(self, name):
         self._pshstack(self.registers[name])
