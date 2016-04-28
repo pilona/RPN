@@ -17,6 +17,23 @@ import math
 import regex
 
 
+# FIXME: *really* dirty hack around inspect.signature not working on some
+# builtins.
+def unary(f):
+    # FIXME: @wraps(f) just exposes the original bug
+    #@wraps(f)
+    def wrapped(only):
+        return f(only)
+    return wrapped
+
+
+def binary(f):
+    #@wraps(f)
+    def wrapped(left, right):
+        return f(left, right)
+    return wrapped
+
+
 class Machine:
     IFMTS = {
         'i': int,
@@ -31,6 +48,94 @@ class Machine:
         'F': Fraction,
     }
     DEFAULT_IFMT = 'f'
+
+    BUILTINS = {
+        # Arithmetic
+        '+': binary(operator.__add__),
+        '-': binary(operator.__sub__),
+        # FIXME: Something better? Woulda been nice to keep this for floor
+        '_': unary(operator.__neg__),
+        '*': binary(operator.__mul__),
+        '/': binary(operator.__truediv__),
+        '%': binary(operator.__mod__),
+        '^': binary(operator.__pow__),
+
+        # Logical
+        '=': binary(operator.__eq__),
+        '!': unary(operator.__not__),
+
+        # Bitwise
+        '«': binary(operator.__lshift__),
+        '»': binary(operator.__rshift__),
+        '~': unary(operator.__invert__),
+    }
+
+    SYMBOLS = {
+        # TODO: U+2200-U+222A, and more
+        '\N{INFINITY}': math.inf,
+        '\N{EMPTY SET}': set(),
+        '\N{INTERSECTION}': set.intersection,
+        '\N{UNION}': set.union,
+        '\N{DEGREE SIGN}': math.degrees,
+    }
+
+    # FIXME: Workaround for inspect.signature not working on these:
+    MATH = {
+        'acos': unary(math.acos),
+        'acosh': unary(math.acosh),
+        'asin': unary(math.asin),
+        'asinh': unary(math.asinh),
+        'atan': unary(math.atan),
+        'atan2': binary(math.atan2),
+        'atanh': unary(math.atanh),
+        'ceil': unary(math.ceil),
+        'copysign': binary(math.copysign),
+        'cos': unary(math.cos),
+        'cosh': unary(math.cosh),
+        'degrees': unary(math.degrees),
+        'e': lambda: math.e,
+        'erf': unary(math.erf),
+        'erfc': unary(math.erfc),
+        'exp': unary(math.exp),
+        'expm1': unary(math.expm1),
+        'fabs': unary(math.fabs),
+        'factorial': unary(math.factorial),
+        'floor': unary(math.floor),
+        'fmod': unary(math.fmod),
+        'frexp': unary(math.frexp),
+        'fsum': unary(math.fsum),
+        'gamma': unary(math.gamma),
+        'gcd': binary(math.gcd),
+        'hypot': binary(math.hypot),
+        'inf': lambda: math.inf,
+        'isclose': binary(math.isclose),
+        'isfinite': unary(math.isfinite),
+        'isinf': unary(math.isinf),
+        'isnan': unary(math.isnan),
+        'ldexp': binary(math.ldexp),
+        'lgamma': unary(math.lgamma),
+        'log': unary(math.log),
+        'log10': unary(math.log10),
+        'log1p': unary(math.log1p),
+        'log2': unary(math.log2),
+        'modf': unary(math.modf),
+        'nan': lambda: math.nan,
+        'pi': lambda: math.pi,
+        'pow': binary(math.pow),
+        'radians': unary(math.radians),
+        'sin': unary(math.sin),
+        'sinh': unary(math.sinh),
+        'sqrt': unary(math.sqrt),
+        'tan': unary(math.tan),
+        'tanh': unary(math.tanh),
+        'trunc': unary(math.trunc),
+    }
+    #MATH = {
+    #    key: value
+    #    for key, value
+    #    in math.__dict__.items()
+    #    if not key.startswith('_')
+    #}
 
     def __init__(self):
         self.registers = dict()
@@ -54,7 +159,7 @@ class Machine:
         elif 'number' in groups:
             yield self.ifmt(groups['number'])
         elif 'operator' in groups:
-            yield OPERATORS[groups['operator']]
+            yield Machine.OPERATORS[groups['operator']]
         elif 'apply' in groups:
             yield self.apply
 
@@ -72,7 +177,7 @@ class Machine:
 
     def apply(self):
         f = self._popstack()[0]
-        self._apply(NAMESPACE[f])
+        self._apply(Machine.NAMESPACE[f])
 
     def _apply(self, parsed):
         if parsed in type(self).FUNCTIONS.values():
@@ -137,8 +242,8 @@ class Machine:
         self.current.rotate(n)
 
     def printhelp(self):
-        print('functions:', *sorted(NAMESPACE), file=stderr)
-        print('operators:', *sorted(OPERATORS), file=stderr)
+        print('functions:', *sorted(Machine.NAMESPACE), file=stderr)
+        print('operators:', *sorted(Machine.OPERATORS), file=stderr)
 
     def load(self, name):
         self._pshstack(self.registers[name])
@@ -165,6 +270,17 @@ class Machine:
         's': store,
         'l': load,
     }
+
+    SHORTHAND = {
+        'v': unary(math.sqrt),
+    }
+
+    OPERATORS = dict()
+    for namespace in SYMBOLS, FUNCTIONS, BUILTINS:
+        OPERATORS.update(namespace)
+    NAMESPACE = dict()
+    for namespace in MATH, SHORTHAND:
+        NAMESPACE.update(namespace)
 
 
 NUMBER = r'''
@@ -200,122 +316,7 @@ STR = r'''
        '''
 
 
-# FIXME: *really* dirty hack around inspect.signature not working on some
-# builtins.
-def unary(f):
-    # FIXME: @wraps(f) just exposes the original bug
-    #@wraps(f)
-    def wrapped(only):
-        return f(only)
-    return wrapped
-
-
-def binary(f):
-    #@wraps(f)
-    def wrapped(left, right):
-        return f(left, right)
-    return wrapped
-
-
-BUILTINS = {
-    # Arithmetic
-    '+': binary(operator.__add__),
-    '-': binary(operator.__sub__),
-    # FIXME: Something better? Woulda been nice to keep this for floor
-    '_': unary(operator.__neg__),
-    '*': binary(operator.__mul__),
-    '/': binary(operator.__truediv__),
-    '%': binary(operator.__mod__),
-    '^': binary(operator.__pow__),
-
-    # Logical
-    '=': binary(operator.__eq__),
-    '!': unary(operator.__not__),
-
-    # Bitwise
-    '«': binary(operator.__lshift__),
-    '»': binary(operator.__rshift__),
-    '~': unary(operator.__invert__),
-}
-
-SYMBOLS = {
-    # TODO: U+2200-U+222A, and more
-    '\N{INFINITY}': math.inf,
-    '\N{EMPTY SET}': set(),
-    '\N{INTERSECTION}': set.intersection,
-    '\N{UNION}': set.union,
-    '\N{DEGREE SIGN}': math.degrees,
-}
-
-# FIXME: Workaround for inspect.signature not working on these:
-MATH = {
-    'acos': unary(math.acos),
-    'acosh': unary(math.acosh),
-    'asin': unary(math.asin),
-    'asinh': unary(math.asinh),
-    'atan': unary(math.atan),
-    'atan2': binary(math.atan2),
-    'atanh': unary(math.atanh),
-    'ceil': unary(math.ceil),
-    'copysign': binary(math.copysign),
-    'cos': unary(math.cos),
-    'cosh': unary(math.cosh),
-    'degrees': unary(math.degrees),
-    'e': lambda: math.e,
-    'erf': unary(math.erf),
-    'erfc': unary(math.erfc),
-    'exp': unary(math.exp),
-    'expm1': unary(math.expm1),
-    'fabs': unary(math.fabs),
-    'factorial': unary(math.factorial),
-    'floor': unary(math.floor),
-    'fmod': unary(math.fmod),
-    'frexp': unary(math.frexp),
-    'fsum': unary(math.fsum),
-    'gamma': unary(math.gamma),
-    'gcd': binary(math.gcd),
-    'hypot': binary(math.hypot),
-    'inf': lambda: math.inf,
-    'isclose': binary(math.isclose),
-    'isfinite': unary(math.isfinite),
-    'isinf': unary(math.isinf),
-    'isnan': unary(math.isnan),
-    'ldexp': binary(math.ldexp),
-    'lgamma': unary(math.lgamma),
-    'log': unary(math.log),
-    'log10': unary(math.log10),
-    'log1p': unary(math.log1p),
-    'log2': unary(math.log2),
-    'modf': unary(math.modf),
-    'nan': lambda: math.nan,
-    'pi': lambda: math.pi,
-    'pow': binary(math.pow),
-    'radians': unary(math.radians),
-    'sin': unary(math.sin),
-    'sinh': unary(math.sinh),
-    'sqrt': unary(math.sqrt),
-    'tan': unary(math.tan),
-    'tanh': unary(math.tanh),
-    'trunc': unary(math.trunc),
-}
-#MATH = {
-#    key: value
-#    for key, value
-#    in math.__dict__.items()
-#    if not key.startswith('_')
-#}
-SHORTHAND = {
-    'v': unary(math.sqrt),
-}
-
-OPERATORS = dict()
-for namespace in SYMBOLS, Machine.FUNCTIONS, BUILTINS:
-    OPERATORS.update(namespace)
-NAMESPACE = dict()
-for namespace in MATH, SHORTHAND:
-    NAMESPACE.update(namespace)
-
-OPERATOR = r'(?:' + '|'.join(map(regex.escape, OPERATORS)) + r')'
+OPERATOR = r'(?:' + '|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
 # TODO: a and A instead? Would make this no longer a special case, which is
 # kinda nice.
 APPLY = r'\$'
