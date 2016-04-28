@@ -136,7 +136,7 @@ class Machine:
     def rotstack(self, n):
         self.current.rotate(n)
 
-    def help(self):
+    def printhelp(self):
         print('functions:', *sorted(NAMESPACE), file=stderr)
         print('operators:', *sorted(OPERATORS), file=stderr)
 
@@ -161,7 +161,7 @@ class Machine:
         # TODO: Clear all the stacks
         'c': clrstack,
         'C': clrstacks,
-        'h': help,
+        'h': printhelp,
         's': store,
         'l': load,
     }
