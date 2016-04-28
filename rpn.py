@@ -406,7 +406,8 @@ def lex():
 argument_parser = ArgumentParser(description='RPN calculator')
 argument_parser.add_argument('-e', '--expression', nargs=REMAINDER)
 for short_, long_, action in [('-g', '--grammar', grammar),
-                              ('-l', '--lex', lex)]:
+                              ('-l', '--lex', lex),
+                              ('-D', '--dump', dumper)]:
     argument_parser.add_argument(short_, long_,
                                  action='store_const', const=action,
                                  dest='action')
