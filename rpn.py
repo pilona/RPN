@@ -42,13 +42,13 @@ class Machine:
 
     def feed(self, match):
         parsed = next(self.parse(match))
-        if isstackable(match):
+        if Lexer.isstackable(match):
             self._pshstack(parsed)
         else:
             self._apply(parsed)
 
     def parse(self, match):
-        groups = matchedgroups(match)
+        groups = Lexer.matchedgroups(match)
         if 'str' in groups:
             yield groups['__str__']
         elif 'number' in groups:
@@ -352,23 +352,30 @@ class Lexer:
             line = line[len(match.group(0)):]
 
 
-def isfeedable(match):
-    return 'space' not in matchedgroups(match).keys()
+    @staticmethod
+    def isfeedable(match):
+    #def isfeedable(self, match):
+        return 'space' not in Lexer.matchedgroups(match).keys()
 
 
-def isstackable(match):
-    return bool(matchedgroups(match).keys() & {'str', 'number'})
+    @staticmethod
+    def isstackable(match):
+    #def isstackable(self, match):
+        return bool(Lexer.matchedgroups(match).keys() & {'str', 'number'})
 
 
-def isimmediate(match):
-    return 'immediate' in match.groupdict()
+    @staticmethod
+    def isimmediate(match):
+    #def isimmediate(self, match):
+        return 'immediate' in match.groupdict()
 
-
-def matchedgroups(match):
-    return {key:value
-            for key, value
-            in match.groupdict().items()
-            if value and key != 'immediate'}
+    @staticmethod
+    def matchedgroups(match):
+    #def matchedgroups(self, match):
+        return {key:value
+                for key, value
+                in match.groupdict().items()
+                if value and key != 'immediate'}
 
 
 def dumper():
@@ -377,7 +384,7 @@ def dumper():
     for line in stdin:
         for match in Lexer.lex(line):
             matched = match.group(0)
-            groups = matchedgroups(match).keys()
+            groups = Lexer.matchedgroups(match).keys()
             parsed = next(machine.parse(match), None)
             print(*groups,
                   repr(matched),
@@ -389,7 +396,7 @@ def executor():
     machine = Machine()
     for line in stdin:
         for match in Lexer.lex(line):
-            if isimmediate(match) and isfeedable(match):
+            if Lexer.isimmediate(match) and Lexer.isfeedable(match):
                 machine.feed(match)
 
 
