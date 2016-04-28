@@ -283,60 +283,58 @@ class Machine:
         NAMESPACE.update(namespace)
 
 
-NUMBER = r'''
-          (?:
-            \d+
-            (?:
-              \.
-              \d*
-            )?
-          )|(?:
-            \d*
-            \.
-            \d+
-          )
-          '''
-STR = r'''
-       (?:
-         '
-         (?<__str__>
-           (?:
-             [^'\\]
-             |
-             \\'
-           )*
-         )
-         '
-       )|(?:
-         \\
-         (?<__str__>
-           .
-         )
-       )
-       '''
-
-
-OPERATOR = r'(?:' + '|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
-# TODO: a and A instead? Would make this no longer a special case, which is
-# kinda nice.
-APPLY = r'\$'
-SPACE = r'\s+'
-
-IMMEDIATE = r'(?<str>' + STR + r')|' \
-            r'(?<operator>' + OPERATOR + r')|' \
-            r'(?<apply>' + APPLY + r')|' \
-            r'(?<space>' + SPACE + r')'
-LEXEME = r'(?<number>' + NUMBER + r')|' \
-         r'(?<immediate>' + IMMEDIATE + r')'
-FLAGS = reduce(operator.__or__,
-               {regex.POSIX,
-                regex.DOTALL,
-                regex.VERSION1,
-                regex.VERBOSE},
-               0)
-
-
 class Lexer:
+    NUMBER = r'''
+             (?:
+                 \d+
+                 (?:
+                 \.
+                 \d*
+                 )?
+             )|(?:
+                 \d*
+                 \.
+                 \d+
+             )
+             '''
+    STR = r'''
+           (?:
+               '
+               (?<__str__>
+               (?:
+                   [^'\\]
+                   |
+                   \\'
+               )*
+               )
+               '
+           )|(?:
+               \\
+               (?<__str__>
+               .
+               )
+           )
+           '''
+
+    OPERATOR = r'(?:' + '|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
+    # TODO: a and A instead? Would make this no longer a special case, which is
+    # kinda nice.
+    APPLY = r'\$'
+    SPACE = r'\s+'
+
+    IMMEDIATE = r'(?<str>' + STR + r')|' \
+                r'(?<operator>' + OPERATOR + r')|' \
+                r'(?<apply>' + APPLY + r')|' \
+                r'(?<space>' + SPACE + r')'
+    LEXEME = r'(?<number>' + NUMBER + r')|' \
+             r'(?<immediate>' + IMMEDIATE + r')'
+    FLAGS = reduce(operator.__or__,
+                   {regex.POSIX,
+                       regex.DOTALL,
+                       regex.VERSION1,
+                       regex.VERBOSE},
+                   0)
+
     def __init__(self, machine):
         self.machine = machine
 
@@ -346,7 +344,7 @@ class Lexer:
     @staticmethod
     def lex(line):
         while line:
-            match = regex.match(LEXEME, line, flags=FLAGS)
+            match = regex.match(Lexer.LEXEME, line, flags=Lexer.FLAGS)
             if match is None:
                 break
             yield match
