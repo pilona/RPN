@@ -165,6 +165,12 @@ class Machine:
     #    in math.__dict__.items()
     #    if not key.startswith('_')
     #}
+    #CMATH = {
+    #    key: value
+    #    for key, value
+    #    in cmath.__dict__.items()
+    #    if not key.startswith('_')
+    #}
 
     def __init__(self):
         self.registers = dict()
