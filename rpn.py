@@ -13,6 +13,7 @@ import inspect
 
 import operator
 import math
+import cmath
 
 import regex
 
@@ -132,6 +133,33 @@ class Machine:
         'tanh': unary(math.tanh),
         'trunc': unary(math.trunc),
     }
+    CMATH = {
+        'acos': unary(cmath.acos),
+        'acosh': unary(cmath.acosh),
+        'asin': unary(cmath.asin),
+        'asinh': unary(cmath.asinh),
+        'atan': unary(cmath.atan),
+        'atanh': unary(cmath.atanh),
+        'cos': unary(cmath.cos),
+        'cosh': unary(cmath.cosh),
+        'e': lambda: cmath.e,
+        'exp': unary(cmath.exp),
+        'isclose': binary(cmath.isclose),
+        'isfinite': unary(cmath.isfinite),
+        'isinf': unary(cmath.isinf),
+        'isnan': unary(cmath.isnan),
+        'log': unary(cmath.log),
+        'log10': unary(cmath.log10),
+        'phase': unary(cmath.phase),
+        'pi': lambda: cmath.pi,
+        'polar': unary(cmath.polar),
+        'rect': binary(cmath.rect),
+        'sin': unary(cmath.sin),
+        'sinh': unary(cmath.sinh),
+        'sqrt': unary(cmath.sqrt),
+        'tan': unary(cmath.tan),
+        'tanh': unary(cmath.tanh),
+    }
     #MATH = {
     #    key: value
     #    for key, value
@@ -163,7 +191,11 @@ class Machine:
         elif 'number' in groups:
             yield self.ifmt(groups['number'])
         elif 'operator' in groups:
-            yield type(self).OPERATORS[groups['operator']]
+            operator = groups['operator']
+            ref = type(self).OPERATORS[operator]
+            if self.ofmt is complex:
+                ref = type(self).CMATH.get(operator, ref)
+            yield ref
         elif 'apply' in groups:
             yield self.apply
 
@@ -313,13 +345,14 @@ class Machine:
 
     SHORTHAND = {
         'v': unary(math.sqrt),
+        'j': lambda n: complex(0, n)
     }
 
     OPERATORS = dict()
     for namespace in SYMBOLS, FUNCTIONS, BUILTINS, SHORTHAND:
         OPERATORS.update(namespace)
     NAMESPACE = dict()
-    for namespace in MATH,:
+    for namespace in CMATH, MATH:
         NAMESPACE.update(namespace)
 
 
