@@ -380,7 +380,7 @@ class Lexer:
 def dumper():
     machine = Machine()
     print('[groups]\t<repr(repr)>\t<arity>')
-    for line in stdin:
+    for line in args.expressions:
         for match in Lexer.lex(line):
             matched = match.group(0)
             groups = Lexer.matchedgroups(match).keys()
@@ -393,7 +393,7 @@ def dumper():
 
 def executor():
     machine = Machine()
-    for line in stdin:
+    for line in args.expressions:
         for match in Lexer.lex(line):
             if Lexer.isimmediate(match) and Lexer.isfeedable(match):
                 machine.feed(match)
@@ -409,14 +409,14 @@ def lex():
 
 
 argument_parser = ArgumentParser(description='RPN calculator')
-argument_parser.add_argument('-e', '--expression', nargs=REMAINDER)
+argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
 for short_, long_, action in [('-g', '--grammar', grammar),
                               ('-l', '--lex', lex),
                               ('-D', '--dump', dumper)]:
     argument_parser.add_argument(short_, long_,
                                  action='store_const', const=action,
                                  dest='action')
-argument_parser.set_defaults(action=executor)
+argument_parser.set_defaults(action=executor, expressions=stdin)
 
 
 if __name__ == '__main__':
