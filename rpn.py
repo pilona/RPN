@@ -9,8 +9,6 @@ from functools import reduce, wraps, partial
 from collections import deque
 from argparse import ArgumentParser, REMAINDER
 
-import inspect
-
 import operator
 import math
 import cmath
@@ -35,7 +33,7 @@ class Machine:
     DEFAULT_OFMT = 'f'
     DEFAULT_PRECISION = None
 
-    # FIXME: *really* dirty hack around inspect.signature not working on some
+    # FIXME: *really* dirty hack around getsignature not working on some
     # builtins.
     def _unary(f):
         # FIXME: @wraps(f) just exposes the original bug
@@ -81,7 +79,7 @@ class Machine:
         '\N{DEGREE SIGN}': math.degrees,
     }
 
-    # FIXME: Workaround for inspect.signature not working on these:
+    # FIXME: Workaround for getsignature not working on these:
     MATH = {
         'acos': _unary(math.acos),
         'acosh': _unary(math.acosh),
@@ -207,7 +205,7 @@ class Machine:
     def _arity(self, f):
         if not callable(f):
             return None
-        signature = inspect.signature(f)
+        signature = getsignature(f)
         parameters = signature.parameters.values()
         positionals = [parameter
                     for parameter
