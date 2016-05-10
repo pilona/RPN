@@ -490,8 +490,8 @@ class CLI:
                                       ('-G', '--raw-grammar', self.raw_grammar),
                                       ('-D', '--dump', self.dumper)]:
             self.argument_parser.add_argument(short_, long_,
-                                         action='store_const', const=action,
-                                         dest='action')
+                                              action='store_const', const=action,
+                                              dest='action')
         self.argument_parser.set_defaults(action=self.executor, expressions=stdin)
 
     def run(self):
