@@ -16,6 +16,20 @@ import cmath
 import regex
 
 
+def wrap_user_errors(fmt):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except UserWarning:
+                raise
+            except Exception as e:
+                raise UserWarning(fmt.format(*args, **kwargs), e)
+        return wrapper
+    return decorator
+
+
 class Machine:
     FMTS = {
         'i': int,
@@ -249,6 +263,7 @@ class Machine:
         self.frames.append(newstack)
         self.current = newstack
 
+    @wrap_user_errors('No stack to return from')
     def retstack(self):
         self.current = self.frames[-2]
 
@@ -259,6 +274,7 @@ class Machine:
         self.stack = deque()
         self.current = self.stack
 
+    @wrap_user_errors('Empty stack')
     def printtop(self):
         self.print(self.current[-1])
 
@@ -276,13 +292,17 @@ class Machine:
     pshstack = _pshstack
 
     def _popstack(self, n=1):
+        if len(self.current) < n:
+            raise UserWarning('Less than {} elements on stack'.format(n))
         return [self.current.pop() for _ in range(n)]
 
+    @wrap_user_errors('Empty stack')
     def dupstack(self):
         top = self._popstack()[0]
         self._pshstack(top)
         self._pshstack(top)
 
+    @wrap_user_errors('Empty stack')
     def popstack(self):
         self.print(self._popstack()[0])
 
@@ -296,18 +316,22 @@ class Machine:
         print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
         print('operators:', *sorted(type(self).OPERATORS), file=stderr)
 
+    @wrap_user_errors('No such register')
     def load(self, name):
         self._pshstack(self.registers[name])
 
     def store(self, name, value):
         self.registers[name] = value
 
+    @wrap_user_errors('No such format')
     def storeifmt(self, ifmt):
         self.ifmt = type(self).FMTS[ifmt]
 
+    @wrap_user_errors('No such format')
     def storeofmt(self, ofmt):
         self.ofmt = type(self).FMTS[ofmt]
 
+    @wrap_user_errors('Bad precision')
     def storeprecision(self, precision):
         self.precision = int(precision)
 
@@ -472,7 +496,10 @@ class CLI:
         for line in self.args.expressions:
             for match in Lexer.lex(line):
                 if Lexer.isimmediate(match) and Lexer.isfeedable(match):
-                    machine.feed(match)
+                    try:
+                        machine.feed(match)
+                    except UserWarning as e:
+                        print(e.args[0])
 
     def grammar(self):
         with open('grammar.pcre') as fp:
