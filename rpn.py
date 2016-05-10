@@ -404,6 +404,10 @@ def grammar():
         print(fp.read().rstrip())
 
 
+def raw_grammar():
+    print(Lexer.LEXEME)
+
+
 def lex():
     raise NotImplementedError()
 
@@ -411,6 +415,7 @@ def lex():
 argument_parser = ArgumentParser(description='RPN calculator')
 argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
 for short_, long_, action in [('-g', '--grammar', grammar),
+                              ('-G', '--raw-grammar', raw_grammar),
                               ('-l', '--lex', lex),
                               ('-D', '--dump', dumper)]:
     argument_parser.add_argument(short_, long_,
