@@ -310,7 +310,7 @@ class Machine:
         self.print(self._popstack()[0])
 
     def revstack(self):
-        self._pshstack(reversed(self._popstack(n=2)))
+        self._pshstack(*reversed(self._popstack(n=2)))
 
     def rotstack(self, n):
         self.current.rotate(n)
