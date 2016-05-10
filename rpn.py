@@ -244,6 +244,7 @@ class Machine:
         if res is not None:
             self._pshstack(res)
 
+    @wrap_user_errors('Cannot convert {1}')
     def _convert(self, number):
         return self.ofmt(number)
 
@@ -254,7 +255,7 @@ class Machine:
             return round(n, self.precision)
 
     def print(self, *args, **kwargs):
-        return print(*[self._round(self.ofmt(arg))
+        return print(*[self._round(self._convert(arg))
                        for arg
                        in args],
                      **kwargs)
