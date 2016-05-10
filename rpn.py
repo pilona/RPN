@@ -498,6 +498,9 @@ class CLI:
         self.args.action()
 
 
+__all__ = 'Machine', 'Lexer', 'CLI'
+
+
 if __name__ == '__main__':
     cli = CLI()
     cli.run()
