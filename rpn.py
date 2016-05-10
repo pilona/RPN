@@ -18,23 +18,6 @@ import cmath
 import regex
 
 
-# FIXME: *really* dirty hack around inspect.signature not working on some
-# builtins.
-def unary(f):
-    # FIXME: @wraps(f) just exposes the original bug
-    #@wraps(f)
-    def wrapped(only):
-        return f(only)
-    return wrapped
-
-
-def binary(f):
-    #@wraps(f)
-    def wrapped(left, right):
-        return f(left, right)
-    return wrapped
-
-
 class Machine:
     FMTS = {
         'i': int,
@@ -52,25 +35,41 @@ class Machine:
     DEFAULT_OFMT = 'f'
     DEFAULT_PRECISION = None
 
+    # FIXME: *really* dirty hack around inspect.signature not working on some
+    # builtins.
+    def _unary(f):
+        # FIXME: @wraps(f) just exposes the original bug
+        #@wraps(f)
+        def wrapped(only):
+            return f(only)
+        return wrapped
+
+
+    def _binary(f):
+        #@wraps(f)
+        def wrapped(left, right):
+            return f(left, right)
+        return wrapped
+
     BUILTINS = {
         # Arithmetic
-        '+': binary(operator.__add__),
-        '-': binary(operator.__sub__),
+        '+': _binary(operator.__add__),
+        '-': _binary(operator.__sub__),
         # FIXME: Something better? Woulda been nice to keep this for floor
-        '_': unary(operator.__neg__),
-        '*': binary(operator.__mul__),
-        '/': binary(operator.__truediv__),
-        '%': binary(operator.__mod__),
-        '^': binary(operator.__pow__),
+        '_': _unary(operator.__neg__),
+        '*': _binary(operator.__mul__),
+        '/': _binary(operator.__truediv__),
+        '%': _binary(operator.__mod__),
+        '^': _binary(operator.__pow__),
 
         # Logical
-        '=': binary(operator.__eq__),
-        '!': unary(operator.__not__),
+        '=': _binary(operator.__eq__),
+        '!': _unary(operator.__not__),
 
         # Bitwise
-        '«': binary(operator.__lshift__),
-        '»': binary(operator.__rshift__),
-        '~': unary(operator.__invert__),
+        '«': _binary(operator.__lshift__),
+        '»': _binary(operator.__rshift__),
+        '~': _unary(operator.__invert__),
     }
 
     SYMBOLS = {
@@ -84,81 +83,81 @@ class Machine:
 
     # FIXME: Workaround for inspect.signature not working on these:
     MATH = {
-        'acos': unary(math.acos),
-        'acosh': unary(math.acosh),
-        'asin': unary(math.asin),
-        'asinh': unary(math.asinh),
-        'atan': unary(math.atan),
-        'atan2': binary(math.atan2),
-        'atanh': unary(math.atanh),
-        'ceil': unary(math.ceil),
-        'copysign': binary(math.copysign),
-        'cos': unary(math.cos),
-        'cosh': unary(math.cosh),
-        'degrees': unary(math.degrees),
+        'acos': _unary(math.acos),
+        'acosh': _unary(math.acosh),
+        'asin': _unary(math.asin),
+        'asinh': _unary(math.asinh),
+        'atan': _unary(math.atan),
+        'atan2': _binary(math.atan2),
+        'atanh': _unary(math.atanh),
+        'ceil': _unary(math.ceil),
+        'copysign': _binary(math.copysign),
+        'cos': _unary(math.cos),
+        'cosh': _unary(math.cosh),
+        'degrees': _unary(math.degrees),
         'e': lambda: math.e,
-        'erf': unary(math.erf),
-        'erfc': unary(math.erfc),
-        'exp': unary(math.exp),
-        'expm1': unary(math.expm1),
-        'fabs': unary(math.fabs),
-        'factorial': unary(math.factorial),
-        'floor': unary(math.floor),
-        'fmod': unary(math.fmod),
-        'frexp': unary(math.frexp),
-        'fsum': unary(math.fsum),
-        'gamma': unary(math.gamma),
-        'gcd': binary(math.gcd),
-        'hypot': binary(math.hypot),
+        'erf': _unary(math.erf),
+        'erfc': _unary(math.erfc),
+        'exp': _unary(math.exp),
+        'expm1': _unary(math.expm1),
+        'fabs': _unary(math.fabs),
+        'factorial': _unary(math.factorial),
+        'floor': _unary(math.floor),
+        'fmod': _unary(math.fmod),
+        'frexp': _unary(math.frexp),
+        'fsum': _unary(math.fsum),
+        'gamma': _unary(math.gamma),
+        'gcd': _binary(math.gcd),
+        'hypot': _binary(math.hypot),
         'inf': lambda: math.inf,
-        'isclose': binary(math.isclose),
-        'isfinite': unary(math.isfinite),
-        'isinf': unary(math.isinf),
-        'isnan': unary(math.isnan),
-        'ldexp': binary(math.ldexp),
-        'lgamma': unary(math.lgamma),
-        'log': unary(math.log),
-        'log10': unary(math.log10),
-        'log1p': unary(math.log1p),
-        'log2': unary(math.log2),
-        'modf': unary(math.modf),
+        'isclose': _binary(math.isclose),
+        'isfinite': _unary(math.isfinite),
+        'isinf': _unary(math.isinf),
+        'isnan': _unary(math.isnan),
+        'ldexp': _binary(math.ldexp),
+        'lgamma': _unary(math.lgamma),
+        'log': _unary(math.log),
+        'log10': _unary(math.log10),
+        'log1p': _unary(math.log1p),
+        'log2': _unary(math.log2),
+        'modf': _unary(math.modf),
         'nan': lambda: math.nan,
         'pi': lambda: math.pi,
-        'pow': binary(math.pow),
-        'radians': unary(math.radians),
-        'sin': unary(math.sin),
-        'sinh': unary(math.sinh),
-        'sqrt': unary(math.sqrt),
-        'tan': unary(math.tan),
-        'tanh': unary(math.tanh),
-        'trunc': unary(math.trunc),
+        'pow': _binary(math.pow),
+        'radians': _unary(math.radians),
+        'sin': _unary(math.sin),
+        'sinh': _unary(math.sinh),
+        'sqrt': _unary(math.sqrt),
+        'tan': _unary(math.tan),
+        'tanh': _unary(math.tanh),
+        'trunc': _unary(math.trunc),
     }
     CMATH = {
-        'acos': unary(cmath.acos),
-        'acosh': unary(cmath.acosh),
-        'asin': unary(cmath.asin),
-        'asinh': unary(cmath.asinh),
-        'atan': unary(cmath.atan),
-        'atanh': unary(cmath.atanh),
-        'cos': unary(cmath.cos),
-        'cosh': unary(cmath.cosh),
+        'acos': _unary(cmath.acos),
+        'acosh': _unary(cmath.acosh),
+        'asin': _unary(cmath.asin),
+        'asinh': _unary(cmath.asinh),
+        'atan': _unary(cmath.atan),
+        'atanh': _unary(cmath.atanh),
+        'cos': _unary(cmath.cos),
+        'cosh': _unary(cmath.cosh),
         'e': lambda: cmath.e,
-        'exp': unary(cmath.exp),
-        'isclose': binary(cmath.isclose),
-        'isfinite': unary(cmath.isfinite),
-        'isinf': unary(cmath.isinf),
-        'isnan': unary(cmath.isnan),
-        'log': unary(cmath.log),
-        'log10': unary(cmath.log10),
-        'phase': unary(cmath.phase),
+        'exp': _unary(cmath.exp),
+        'isclose': _binary(cmath.isclose),
+        'isfinite': _unary(cmath.isfinite),
+        'isinf': _unary(cmath.isinf),
+        'isnan': _unary(cmath.isnan),
+        'log': _unary(cmath.log),
+        'log10': _unary(cmath.log10),
+        'phase': _unary(cmath.phase),
         'pi': lambda: cmath.pi,
-        'polar': unary(cmath.polar),
-        'rect': binary(cmath.rect),
-        'sin': unary(cmath.sin),
-        'sinh': unary(cmath.sinh),
-        'sqrt': unary(cmath.sqrt),
-        'tan': unary(cmath.tan),
-        'tanh': unary(cmath.tanh),
+        'polar': _unary(cmath.polar),
+        'rect': _binary(cmath.rect),
+        'sin': _unary(cmath.sin),
+        'sinh': _unary(cmath.sinh),
+        'sqrt': _unary(cmath.sqrt),
+        'tan': _unary(cmath.tan),
+        'tanh': _unary(cmath.tanh),
     }
     #MATH = {
     #    key: value
@@ -344,7 +343,7 @@ class Machine:
     }
 
     SHORTHAND = {
-        'v': unary(math.sqrt),
+        'v': _unary(math.sqrt),
         'j': lambda n: complex(0, n)
     }
 
