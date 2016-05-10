@@ -450,53 +450,54 @@ class Lexer:
                 if value and key != 'immediate'}
 
 
-def dumper():
-    machine = Machine()
-    print('[groups]\t<repr(repr)>\t<arity>')
-    for line in args.expressions:
-        for match in Lexer.lex(line):
-            matched = match.group(0)
-            groups = Lexer.matchedgroups(match).keys()
-            parsed = next(machine.parse(match), None)
-            print(*groups,
-                  repr(matched),
-                  machine._arity(parsed),
-                  sep='\t')
+class CLI:
+    def dumper(self):
+        machine = Machine()
+        print('[groups]\t<repr(repr)>\t<arity>')
+        for line in self.args.expressions:
+            for match in Lexer.lex(line):
+                matched = match.group(0)
+                groups = Lexer.matchedgroups(match).keys()
+                parsed = next(machine.parse(match), None)
+                print(*groups,
+                      repr(matched),
+                      machine._arity(parsed),
+                      sep='\t')
 
+    def executor(self):
+        machine = Machine()
+        for line in self.args.expressions:
+            for match in Lexer.lex(line):
+                if Lexer.isimmediate(match) and Lexer.isfeedable(match):
+                    machine.feed(match)
 
-def executor():
-    machine = Machine()
-    for line in args.expressions:
-        for match in Lexer.lex(line):
-            if Lexer.isimmediate(match) and Lexer.isfeedable(match):
-                machine.feed(match)
+    def grammar(self):
+        with open('grammar.pcre') as fp:
+            print(fp.read().rstrip())
 
+    def raw_grammar(self):
+        print(Lexer.LEXEME)
 
-def grammar():
-    with open('grammar.pcre') as fp:
-        print(fp.read().rstrip())
+    def lex(self):
+        raise NotImplementedError()
 
+    def __init__(self):
+        self.argument_parser = ArgumentParser(description='RPN calculator')
+        self.argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
+        for short_, long_, action in [('-g', '--grammar', self.grammar),
+                                      ('-G', '--raw-grammar', self.raw_grammar),
+                                      ('-l', '--lex', self.lex),
+                                      ('-D', '--dump', self.dumper)]:
+            self.argument_parser.add_argument(short_, long_,
+                                         action='store_const', const=action,
+                                         dest='action')
+        self.argument_parser.set_defaults(action=self.executor, expressions=stdin)
 
-def raw_grammar():
-    print(Lexer.LEXEME)
-
-
-def lex():
-    raise NotImplementedError()
-
-
-argument_parser = ArgumentParser(description='RPN calculator')
-argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
-for short_, long_, action in [('-g', '--grammar', grammar),
-                              ('-G', '--raw-grammar', raw_grammar),
-                              ('-l', '--lex', lex),
-                              ('-D', '--dump', dumper)]:
-    argument_parser.add_argument(short_, long_,
-                                 action='store_const', const=action,
-                                 dest='action')
-argument_parser.set_defaults(action=executor, expressions=stdin)
+    def run(self):
+        self.args = self.argument_parser.parse_args()
+        self.args.action()
 
 
 if __name__ == '__main__':
-    args = argument_parser.parse_args()
-    args.action()
+    cli = CLI()
+    cli.run()
