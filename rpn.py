@@ -276,10 +276,10 @@ class Machine:
     }
 
     OPERATORS = dict()
-    for namespace in SYMBOLS, FUNCTIONS, BUILTINS:
+    for namespace in SYMBOLS, FUNCTIONS, BUILTINS, SHORTHAND:
         OPERATORS.update(namespace)
     NAMESPACE = dict()
-    for namespace in MATH, SHORTHAND:
+    for namespace in MATH,:
         NAMESPACE.update(namespace)
 
 
