@@ -49,6 +49,7 @@ class Machine:
     }
     DEFAULT_IFMT = 'f'
     DEFAULT_OFMT = 'f'
+    DEFAULT_PRECISION = None
 
     BUILTINS = {
         # Arithmetic
@@ -145,6 +146,7 @@ class Machine:
         self.current = self.stack
         self.ifmt = type(self).FMTS[type(self).DEFAULT_IFMT]
         self.ofmt = type(self).FMTS[type(self).DEFAULT_OFMT]
+        self.precision = type(self).DEFAULT_PRECISION
         # TODO: Endianness
 
     def feed(self, match):
@@ -193,6 +195,12 @@ class Machine:
 
     def _convert(self, number):
         return self.ofmt(number)
+
+    def _round(self, n):
+        if self.precision is None:
+            return n
+        else:
+            return round(n, self.precision)
 
     def print(self, *args, **kwargs):
         return print(*[self._round(self.ofmt(arg))
@@ -265,11 +273,17 @@ class Machine:
     def storeofmt(self, ofmt):
         self.ofmt = type(self).FMTS[ofmt]
 
+    def storeprecision(self, precision):
+        self.precision = int(precision)
+
     def loadifmt():
         self._pshstack(self.ifmt)
 
     def loadofmt():
         self._pshstack(self.ofmt)
+
+    def loadprecision():
+        self._pshstack(self.precision)
 
     # TODO: Create proper lexer class bound to a Machine
     FUNCTIONS = {
@@ -291,8 +305,10 @@ class Machine:
         'l': load,
         'i': storeifmt,
         'o': storeofmt,
+        'k': storeprecision,
         'I': loadifmt,
         'O': loadofmt,
+        'K': loadprecision,
     }
 
     SHORTHAND = {
