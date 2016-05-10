@@ -35,7 +35,7 @@ def binary(f):
 
 
 class Machine:
-    IFMTS = {
+    FMTS = {
         'i': int,
         'f': float,
         'D': Decimal,
@@ -48,6 +48,7 @@ class Machine:
         'F': Fraction,
     }
     DEFAULT_IFMT = 'f'
+    DEFAULT_OFMT = 'f'
 
     BUILTINS = {
         # Arithmetic
@@ -142,7 +143,8 @@ class Machine:
         self.stack = deque()
         self.frames = deque([self.stack])
         self.current = self.stack
-        self.ifmt = type(self).IFMTS[type(self).DEFAULT_IFMT]
+        self.ifmt = type(self).FMTS[type(self).DEFAULT_IFMT]
+        self.ofmt = type(self).FMTS[type(self).DEFAULT_OFMT]
         # TODO: Endianness
 
     def feed(self, match):
@@ -189,8 +191,14 @@ class Machine:
         if res is not None:
             self._pshstack(res)
 
-    def _convert(number):
+    def _convert(self, number):
         return self.ofmt(number)
+
+    def print(self, *args, **kwargs):
+        return print(*[self._round(self.ofmt(arg))
+                       for arg
+                       in args],
+                     **kwargs)
 
     def newstack(self):
         newstack = deque()
@@ -209,15 +217,15 @@ class Machine:
         self.current = self.stack
 
     def printtop(self):
-        print(self.current[-1])
+        self.print(self.current[-1])
 
     def printcur(self):
         # TODO: Output endianness?
-        print(*reversed(self.current), sep='\n')
+        self.print(*reversed(self.current), sep='\n')
 
     def printall(self):
         # TODO: Output endianness?
-        print(*reversed(self.stack), sep='\n')
+        self.print(*reversed(self.stack), sep='\n')
 
     def _pshstack(self, *new):
         self.current.extend(new)
@@ -233,7 +241,7 @@ class Machine:
         self._pshstack(top)
 
     def popstack(self):
-        print(self._popstack()[0])
+        self.print(self._popstack()[0])
 
     def revstack(self):
         self._pshstack(reversed(self._popstack(n=2)))
@@ -250,6 +258,18 @@ class Machine:
 
     def store(self, name, value):
         self.registers[name] = value
+
+    def storeifmt(self, ifmt):
+        self.ifmt = type(self).FMTS[ifmt]
+
+    def storeofmt(self, ofmt):
+        self.ofmt = type(self).FMTS[ofmt]
+
+    def loadifmt():
+        self._pshstack(self.ifmt)
+
+    def loadofmt():
+        self._pshstack(self.ofmt)
 
     # TODO: Create proper lexer class bound to a Machine
     FUNCTIONS = {
@@ -269,6 +289,10 @@ class Machine:
         'h': printhelp,
         's': store,
         'l': load,
+        'i': storeifmt,
+        'o': storeofmt,
+        'I': loadifmt,
+        'O': loadofmt,
     }
 
     SHORTHAND = {
