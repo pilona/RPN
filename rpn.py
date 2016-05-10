@@ -8,6 +8,7 @@ from inspect import signature as getsignature, Parameter
 from functools import reduce, wraps, partial
 from collections import deque
 from argparse import ArgumentParser, REMAINDER
+from warnings import warn
 
 import operator
 import math
@@ -184,7 +185,7 @@ class Machine:
     #    if not key.startswith('_')
     #}
 
-    def __init__(self):
+    def __init__(self, verbose=None):
         self.registers = dict()
         self.stack = deque()
         self.frames = deque([self.stack])
@@ -192,6 +193,7 @@ class Machine:
         self.ifmt = type(self).FMTS[type(self).DEFAULT_IFMT]
         self.ofmt = type(self).FMTS[type(self).DEFAULT_OFMT]
         self.precision = type(self).DEFAULT_PRECISION
+        self.verbose = verbose
         # TODO: Endianness
 
     def feed(self, match):
@@ -492,7 +494,7 @@ class CLI:
                       sep='\t')
 
     def executor(self):
-        machine = Machine()
+        machine = Machine(verbose=self.args.verbose)
         for line in self.args.expressions:
             for match in Lexer.lex(line):
                 if Lexer.isimmediate(match) and Lexer.isfeedable(match):
@@ -500,6 +502,8 @@ class CLI:
                         machine.feed(match)
                     except UserWarning as e:
                         print(e.args[0])
+                        if machine.verbose:
+                            warn(e.args[1])
 
     def grammar(self):
         with open('grammar.pcre') as fp:
@@ -510,6 +514,7 @@ class CLI:
 
     def __init__(self):
         self.argument_parser = ArgumentParser(description='RPN calculator')
+        self.argument_parser.add_argument('-v', '--verbose', action='store_true')
         self.argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
         for short_, long_, action in [('-g', '--grammar', self.grammar),
                                       ('-G', '--raw-grammar', self.raw_grammar),
