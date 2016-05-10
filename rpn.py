@@ -477,15 +477,11 @@ class CLI:
     def raw_grammar(self):
         print(Lexer.LEXEME)
 
-    def lex(self):
-        raise NotImplementedError()
-
     def __init__(self):
         self.argument_parser = ArgumentParser(description='RPN calculator')
         self.argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
         for short_, long_, action in [('-g', '--grammar', self.grammar),
                                       ('-G', '--raw-grammar', self.raw_grammar),
-                                      ('-l', '--lex', self.lex),
                                       ('-D', '--dump', self.dumper)]:
             self.argument_parser.add_argument(short_, long_,
                                          action='store_const', const=action,
