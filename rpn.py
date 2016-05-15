@@ -204,15 +204,14 @@ class Machine:
         self.verbose = verbose
         # TODO: Endianness
 
-    def feed(self, match):
-        parsed = next(self.parse(match))
-        if Lexer.isstackable(match):
+    def feed(self, groups):
+        parsed = next(self.parse(groups))
+        if self.isstackable(groups):
             self._pshstack(parsed)
         else:
             self._apply(parsed)
 
-    def parse(self, match):
-        groups = Lexer.matchedgroups(match)
+    def parse(self, groups):
         if 'str' in groups:
             yield groups['__str__']
         elif 'number' in groups:
@@ -225,6 +224,9 @@ class Machine:
             yield ref
         elif 'apply' in groups:
             yield self.apply
+
+    def isstackable(self, groups):
+        return bool(groups.keys() & {'str', 'number'})
 
     def _arity(self, f):
         if not callable(f):
@@ -461,18 +463,10 @@ class Lexer:
             yield match
             line = line[len(match.group(0)):]
 
-
     @staticmethod
     def isfeedable(match):
     #def isfeedable(self, match):
         return 'space' not in Lexer.matchedgroups(match).keys()
-
-
-    @staticmethod
-    def isstackable(match):
-    #def isstackable(self, match):
-        return bool(Lexer.matchedgroups(match).keys() & {'str', 'number'})
-
 
     @staticmethod
     def isimmediate(match):
@@ -508,7 +502,7 @@ class CLI:
             for match in Lexer.lex(line):
                 if Lexer.isimmediate(match) and Lexer.isfeedable(match):
                     try:
-                        machine.feed(match)
+                        machine.feed(Lexer.matchedgroups(match))
                     except UserWarning as e:
                         print(e.args[0])
                         if machine.verbose:
