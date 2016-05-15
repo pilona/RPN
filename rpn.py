@@ -48,6 +48,14 @@ class Machine:
     DEFAULT_OFMT = 'f'
     DEFAULT_PRECISION = None
 
+    def _nullary(f):
+        def wrapped():
+            if callable(f):
+                return f()
+            else:
+                return f
+        return wrapped
+
     # FIXME: *really* dirty hack around getsignature not working on some
     # builtins.
     def _unary(f):
@@ -108,7 +116,7 @@ class Machine:
         'cos': _unary(math.cos),
         'cosh': _unary(math.cosh),
         'degrees': _unary(math.degrees),
-        'e': lambda: math.e,
+        'e': _nullary(math.e),
         'erf': _unary(math.erf),
         'erfc': _unary(math.erfc),
         'exp': _unary(math.exp),
@@ -122,7 +130,7 @@ class Machine:
         'gamma': _unary(math.gamma),
         'gcd': _binary(math.gcd),
         'hypot': _binary(math.hypot),
-        'inf': lambda: math.inf,
+        'inf': _nullary(math.inf),
         'isclose': _binary(math.isclose),
         'isfinite': _unary(math.isfinite),
         'isinf': _unary(math.isinf),
@@ -134,8 +142,8 @@ class Machine:
         'log1p': _unary(math.log1p),
         'log2': _unary(math.log2),
         'modf': _unary(math.modf),
-        'nan': lambda: math.nan,
-        'pi': lambda: math.pi,
+        'nan': _nullary(math.nan),
+        'pi': _nullary(math.pi),
         'pow': _binary(math.pow),
         'radians': _unary(math.radians),
         'sin': _unary(math.sin),
@@ -154,7 +162,7 @@ class Machine:
         'atanh': _unary(cmath.atanh),
         'cos': _unary(cmath.cos),
         'cosh': _unary(cmath.cosh),
-        'e': lambda: cmath.e,
+        'e': _nullary(cmath.e),
         'exp': _unary(cmath.exp),
         'isclose': _binary(cmath.isclose),
         'isfinite': _unary(cmath.isfinite),
@@ -163,7 +171,7 @@ class Machine:
         'log': _unary(cmath.log),
         'log10': _unary(cmath.log10),
         'phase': _unary(cmath.phase),
-        'pi': lambda: cmath.pi,
+        'pi': _nullary(cmath.pi),
         'polar': _unary(cmath.polar),
         'rect': _binary(cmath.rect),
         'sin': _unary(cmath.sin),
