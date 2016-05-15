@@ -454,28 +454,22 @@ class Lexer:
     def feed(line):
         raise NotImplementedError()
 
-    @staticmethod
-    def lex(line):
+    def lex(self, line):
         while line:
-            match = regex.match(Lexer.LEXEME, line, flags=Lexer.FLAGS)
+            match = regex.match(type(self).LEXEME, line,
+                                flags=type(self).FLAGS)
             if match is None:
                 break
             yield match
             line = line[len(match.group(0)):]
 
-    @staticmethod
-    def isfeedable(match):
-    #def isfeedable(self, match):
-        return 'space' not in Lexer.matchedgroups(match).keys()
+    def isfeedable(self, match):
+        return 'space' not in self.matchedgroups(match).keys()
 
-    @staticmethod
-    def isimmediate(match):
-    #def isimmediate(self, match):
+    def isimmediate(self, match):
         return 'immediate' in match.groupdict()
 
-    @staticmethod
-    def matchedgroups(match):
-    #def matchedgroups(self, match):
+    def matchedgroups(self, match):
         return {key:value
                 for key, value
                 in match.groupdict().items()
@@ -485,11 +479,12 @@ class Lexer:
 class CLI:
     def dumper(self):
         machine = Machine()
+        lexer = Lexer()
         print('[groups]\t<repr(repr)>\t<arity>')
         for line in self.args.expressions:
-            for match in Lexer.lex(line):
+            for match in lexer.lex(line):
                 matched = match.group(0)
-                groups = Lexer.matchedgroups(match).keys()
+                groups = lexer.matchedgroups(match).keys()
                 parsed = next(machine.parse(match), None)
                 print(*groups,
                       repr(matched),
@@ -498,11 +493,12 @@ class CLI:
 
     def executor(self):
         machine = Machine(verbose=self.args.verbose)
+        lexer = Lexer()
         for line in self.args.expressions:
-            for match in Lexer.lex(line):
-                if Lexer.isimmediate(match) and Lexer.isfeedable(match):
+            for match in lexer.lex(line):
+                if lexer.isimmediate(match) and lexer.isfeedable(match):
                     try:
-                        machine.feed(Lexer.matchedgroups(match))
+                        machine.feed(lexer.matchedgroups(match))
                     except UserWarning as e:
                         print(e.args[0])
                         if machine.verbose:
@@ -513,7 +509,8 @@ class CLI:
             print(fp.read().rstrip())
 
     def raw_grammar(self):
-        print(Lexer.LEXEME)
+        lexer = Lexer()
+        print(lexer.LEXEME)
 
     def __init__(self):
         self.argument_parser = ArgumentParser(description='RPN calculator')
