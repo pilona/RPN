@@ -215,7 +215,7 @@ class Machine:
         if 'str' in groups:
             yield groups['__str__']
         elif 'number' in groups:
-            yield self.ifmt(groups['number'])
+            yield self._iconvert(groups['number'])
         elif 'operator' in groups:
             operator = groups['operator']
             ref = type(self).OPERATORS[operator]
@@ -255,7 +255,11 @@ class Machine:
             self._pshstack(res)
 
     @wrap_user_errors('Cannot convert {1}')
-    def _convert(self, number):
+    def _iconvert(self, number):
+        return self.ifmt(number.replace('_', ''))
+
+    @wrap_user_errors('Cannot convert {1}')
+    def _oconvert(self, number):
         return self.ofmt(number)
 
     def _round(self, n):
@@ -265,7 +269,7 @@ class Machine:
             return round(n, self.precision)
 
     def print(self, *args, **kwargs):
-        return print(*[self._round(self._convert(arg))
+        return print(*[self._round(self._oconvert(arg))
                        for arg
                        in args],
                      **kwargs)
@@ -397,19 +401,23 @@ class Machine:
 
 
 class Lexer:
+    # Support not just digits, but thousands separators
+    DIGITS = r'(?:\d{1,3}(\d{3}|_)*)'
+    # String formatting and regex is a tricky business, because of the braces.
+    # It works here. Be careful in general!
     NUMBER = r'''
               (?:
-                  \d+
+                  {DIGITS}+
                   (?:
                   \.
-                  \d*
+                  {DIGITS}*
                   )?
               )|(?:
-                  \d*
+                  {DIGITS}*
                   \.
-                  \d+
+                  {DIGITS}+
               )
-              '''
+              '''.format(DIGITS=DIGITS)
     STR = r'''
            (?:
                '
