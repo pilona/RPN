@@ -443,11 +443,11 @@ class Lexer:
     APPLY = r'\$'
     SPACE = r'\s+'
 
-    IMMEDIATE = r'(?<str>' + STR + r')|' \
-                r'(?<operator>' + OPERATOR + r')|' \
+    IMMEDIATE = r'(?<operator>' + OPERATOR + r')|' \
                 r'(?<apply>' + APPLY + r')|' \
                 r'(?<space>' + SPACE + r')'
     LEXEME = r'(?<number>' + NUMBER + r')|' \
+             r'(?<str>' + STR + r')|' \
              r'(?<immediate>' + IMMEDIATE + r')'
     FLAGS = reduce(operator.__or__,
                    {regex.POSIX,
