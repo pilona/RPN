@@ -437,6 +437,10 @@ class Lexer:
            )
            '''
 
+    assert not [operator
+                for operator
+                in Machine.OPERATORS
+                if len(operator) != 1]
     OPERATOR = r'(?:' + r'|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
     # TODO: a and A instead? Would make this no longer a special case, which is
     # kinda nice.
