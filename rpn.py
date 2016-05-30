@@ -332,6 +332,7 @@ class Machine:
     def printhelp(self):
         print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
         print('operators:', *sorted(type(self).OPERATORS), file=stderr)
+        print('formats:', *sorted(type(self).FMTS), file=stderr)
 
     @wrap_user_errors('No such register')
     def load(self, name):
