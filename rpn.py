@@ -327,7 +327,7 @@ class Machine:
         self._pshstack(*reversed(self._popstack(n=2)))
 
     def rotstack(self, n):
-        self.current.rotate(n)
+        self.current.rotate(int(n))
 
     def printhelp(self):
         print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
