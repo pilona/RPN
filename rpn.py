@@ -197,7 +197,6 @@ class Machine:
         self.registers = dict()
         self.stack = deque()
         self.frames = deque([self.stack])
-        self.current = self.stack
         self.ifmt = type(self).FMTS[type(self).DEFAULT_IFMT]
         self.ofmt = type(self).FMTS[type(self).DEFAULT_OFMT]
         self.precision = type(self).DEFAULT_PRECISION
@@ -274,44 +273,26 @@ class Machine:
                        in args],
                      **kwargs)
 
-    def newstack(self):
-        newstack = deque()
-        self.stack.append(newstack)
-        self.frames.append(newstack)
-        self.current = newstack
-
-    @wrap_user_errors('No stack to return from')
-    def retstack(self):
-        self.current = self.frames[-2]
-
     def clrstack(self):
-        self.current.clear()
-
-    def clrstacks(self):
-        self.stack = deque()
-        self.current = self.stack
+        self.stack.clear()
 
     @wrap_user_errors('Empty stack')
     def printtop(self):
-        self.print(self.current[-1])
+        self.print(self.stack[-1])
 
     def printcur(self):
-        # TODO: Output endianness?
-        self.print(*reversed(self.current), sep='\n')
-
-    def printall(self):
         # TODO: Output endianness?
         self.print(*reversed(self.stack), sep='\n')
 
     def _pshstack(self, *new):
-        self.current.extend(new)
+        self.stack.extend(new)
 
     pshstack = _pshstack
 
     def _popstack(self, n=1):
-        if len(self.current) < n:
+        if len(self.stack) < n:
             raise UserWarning('Less than {} elements on stack'.format(n))
-        return [self.current.pop() for _ in range(n)]
+        return [self.stack.pop() for _ in range(n)]
 
     @wrap_user_errors('Empty stack')
     def dupstack(self):
@@ -327,7 +308,7 @@ class Machine:
         self._pshstack(*reversed(self._popstack(n=2)))
 
     def rotstack(self, n):
-        self.current.rotate(int(n))
+        self.stack.rotate(int(n))
 
     def printhelp(self):
         print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
@@ -365,18 +346,14 @@ class Machine:
     # TODO: Create proper lexer class bound to a Machine
     FUNCTIONS = {
         # TODO: How to bind to machine?
-        '[': newstack,
-        ']': retstack,
         'p': printtop,
         'P': popstack,
         'f': printcur,
-        'F': printall,
         'd': dupstack,
         'r': revstack,
         'R': rotstack,
         # TODO: Clear all the stacks
         'c': clrstack,
-        'C': clrstacks,
         'h': printhelp,
         's': store,
         'l': load,
