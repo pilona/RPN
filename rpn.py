@@ -65,7 +65,6 @@ class Machine:
             return f(only)
         return wrapped
 
-
     def _binary(f):
         #@wraps(f)
         def wrapped(left, right):
@@ -233,10 +232,10 @@ class Machine:
         signature = getsignature(f)
         parameters = signature.parameters.values()
         positionals = [parameter
-                    for parameter
-                    in parameters
-                    if parameter.kind == Parameter.POSITIONAL_OR_KEYWORD and
-                        parameter.default == Parameter.empty]
+                       for parameter
+                       in parameters
+                       if parameter.kind == Parameter.POSITIONAL_OR_KEYWORD and
+                          parameter.default == Parameter.empty]
         return len(positionals)
 
     def apply(self):
@@ -460,7 +459,7 @@ class Lexer:
         return 'immediate' in match.groupdict()
 
     def matchedgroups(self, match):
-        return {key:value
+        return {key: value
                 for key, value
                 in match.groupdict().items()
                 if value and key != 'immediate'}
@@ -504,15 +503,22 @@ class CLI:
 
     def __init__(self):
         self.argument_parser = ArgumentParser(description='RPN calculator')
-        self.argument_parser.add_argument('-v', '--verbose', action='store_true')
-        self.argument_parser.add_argument('-e', '--expression', nargs=REMAINDER, dest='expressions')
-        for short_, long_, action in [('-g', '--grammar', self.grammar),
-                                      ('-G', '--raw-grammar', self.raw_grammar),
+        self.argument_parser.add_argument('-v', '--verbose',
+                                          action='store_true')
+        self.argument_parser.add_argument('-e', '--expression',
+                                          nargs=REMAINDER,
+                                          dest='expressions')
+        for short_, long_, action in [('-g', '--grammar',
+                                       self.grammar),
+                                      ('-G', '--raw-grammar',
+                                       self.raw_grammar),
                                       ('-D', '--dump', self.dumper)]:
             self.argument_parser.add_argument(short_, long_,
-                                              action='store_const', const=action,
+                                              action='store_const',
+                                              const=action,
                                               dest='action')
-        self.argument_parser.set_defaults(action=self.executor, expressions=stdin)
+        self.argument_parser.set_defaults(action=self.executor,
+                                          expressions=stdin)
 
     def run(self):
         self.args = self.argument_parser.parse_args()
