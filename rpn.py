@@ -333,13 +333,13 @@ class Machine:
     def storeprecision(self, precision):
         self.precision = int(precision)
 
-    def loadifmt():
+    def loadifmt(self):
         self._pshstack(self.ifmt)
 
-    def loadofmt():
+    def loadofmt(self):
         self._pshstack(self.ofmt)
 
-    def loadprecision():
+    def loadprecision(self):
         self._pshstack(self.precision)
 
     # TODO: Create proper lexer class bound to a Machine
