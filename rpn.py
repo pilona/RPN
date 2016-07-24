@@ -375,6 +375,7 @@ class Machine:
     NAMESPACE = dict()
     for namespace in CMATH, MATH:
         NAMESPACE.update(namespace)
+    NAMESPACE['gcd'] = gcd
 
 
 class Lexer:
