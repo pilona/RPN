@@ -438,12 +438,6 @@ class Lexer:
                        regex.VERBOSE},
                    0)
 
-    def __init__(self, machine):
-        self.machine = machine
-
-    def feed(line):
-        raise NotImplementedError()
-
     def lex(self, line):
         while line:
             match = regex.match(type(self).LEXEME, line,
