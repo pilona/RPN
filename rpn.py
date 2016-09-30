@@ -279,7 +279,7 @@ class Machine:
     def printtop(self):
         self.print(self.stack[-1])
 
-    def printcur(self):
+    def printstack(self):
         # TODO: Output endianness?
         self.print(*reversed(self.stack), sep='\n')
 
@@ -347,7 +347,7 @@ class Machine:
         # TODO: How to bind to machine?
         'p': printtop,
         'P': popstack,
-        'f': printcur,
+        'f': printstack,
         'd': dupstack,
         'r': revstack,
         'R': rotstack,
