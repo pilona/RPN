@@ -318,7 +318,7 @@ class Machine:
     def load(self, name):
         self._pshstack(self.registers[name])
 
-    def store(self, name, value):
+    def store(self, value, name):
         self.registers[name] = value
 
     @wrap_user_errors('No such format')
