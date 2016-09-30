@@ -109,11 +109,11 @@ class Machine:
 
     SYMBOLS = {
         # TODO: U+2200-U+222A, and more
-        '\N{INFINITY}': math.inf,
-        '\N{EMPTY SET}': set(),
-        '\N{INTERSECTION}': set.intersection,
-        '\N{UNION}': set.union,
-        '\N{DEGREE SIGN}': math.degrees,
+        '\N{INFINITY}': _nullary(math.inf),
+        '\N{EMPTY SET}': _unary(set),
+        '\N{INTERSECTION}': _binary(set.intersection),
+        '\N{UNION}': _binary(set.union),
+        '\N{DEGREE SIGN}': _unary(math.degrees),
     }
 
     # FIXME: Workaround for getsignature not working on these:
