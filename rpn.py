@@ -54,6 +54,11 @@ class Machine:
                 return f()
             else:
                 return f
+        try:
+            wrapped.__doc__ = f.__doc__
+            wrapped.__name__ = f.__name__
+        except AttributeError:
+            pass
         return wrapped
 
     # FIXME: *really* dirty hack around getsignature not working on some
@@ -63,12 +68,22 @@ class Machine:
         #@wraps(f)
         def wrapped(only):
             return f(only)
+        try:
+            wrapped.__doc__ = f.__doc__
+            wrapped.__name__ = f.__name__
+        except AttributeError:
+            pass
         return wrapped
 
     def _binary(f):
         #@wraps(f)
         def wrapped(left, right):
             return f(left, right)
+        try:
+            wrapped.__doc__ = f.__doc__
+            wrapped.__name__ = f.__name__
+        except AttributeError:
+            pass
         return wrapped
 
     BUILTINS = {
@@ -273,13 +288,22 @@ class Machine:
                      **kwargs)
 
     def clrstack(self):
+        '''
+        Clear everything from the stack.
+        '''
         self.stack.clear()
 
     @wrap_user_errors('Empty stack')
     def printtop(self):
+        '''
+        Print the element on the top of the stack.
+        '''
         self.print(self.stack[-1])
 
     def printstack(self):
+        '''
+        Print all elements on the stack, top of the stack first.
+        '''
         # TODO: Output endianness?
         self.print(*reversed(self.stack), sep='\n')
 
@@ -295,21 +319,36 @@ class Machine:
 
     @wrap_user_errors('Empty stack')
     def dupstack(self):
+        '''
+        Duplicate element at top of stack.
+        '''
         top = self._popstack()[0]
         self._pshstack(top)
         self._pshstack(top)
 
     @wrap_user_errors('Empty stack')
     def popstack(self):
+        '''
+        Pop and print element at top of stack.
+        '''
         self.print(self._popstack()[0])
 
     def revstack(self):
+        '''
+        Swap two elements at top of stack.
+        '''
         self._pshstack(*self._popstack(n=2))
 
     def rotstack(self, n):
+        '''
+        Rotate the entire stack by n.
+        '''
         self.stack.rotate(int(n))
 
     def printhelp(self):
+        '''
+        Print all possible commands.
+        '''
         print('functions:', *sorted(type(self).NAMESPACE), file=stderr)
         print('operators:', *sorted(type(self).OPERATORS), file=stderr)
         print('formats:', *sorted(type(self).FMTS), file=stderr)
@@ -319,28 +358,61 @@ class Machine:
         self._pshstack(self.registers[name])
 
     def store(self, value, name):
+        '''
+        Store value into variable.
+        '''
         self.registers[name] = value
 
     @wrap_user_errors('No such format')
     def storeifmt(self, ifmt):
+        '''
+        Set default coercion on input.
+        '''
         self.ifmt = type(self).FMTS[ifmt]
 
     @wrap_user_errors('No such format')
     def storeofmt(self, ofmt):
+        '''
+        Set default output format.
+        '''
         self.ofmt = type(self).FMTS[ofmt]
 
     @wrap_user_errors('Bad precision')
     def storeprecision(self, precision):
+        '''
+        Set output rounding.
+        '''
         self.precision = int(precision)
 
     def loadifmt(self):
+        '''
+        Push input coercion function to top of stack.
+        '''
         self._pshstack(self.ifmt)
 
     def loadofmt(self):
+        '''
+        Push output format function to top of stack.
+        '''
         self._pshstack(self.ofmt)
 
     def loadprecision(self):
+        '''
+        Push output rounding to top of stack.
+        '''
         self._pshstack(self.precision)
+
+    @wrap_user_errors('No such name')
+    def help(self, name):
+        '''
+        Show help for operators or math function with name.
+        '''
+        ref = type(self).OPERATORS.get(name)
+        if ref is None:
+            ref = type(self).NAMESPACE.get(name)
+        if ref is None:
+            raise KeyError
+        help(ref)
 
     # TODO: Create proper lexer class bound to a Machine
     FUNCTIONS = {
@@ -354,6 +426,7 @@ class Machine:
         # TODO: Clear all the stacks
         'c': clrstack,
         'h': printhelp,
+        'H': help,
         's': store,
         'l': load,
         'i': storeifmt,
