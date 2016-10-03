@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# TODO: Thousands separator formatting.
+
 from sys import stdin, stderr
 from decimal import Decimal
 from datetime import datetime, time
@@ -452,23 +454,54 @@ class Machine:
 
 
 class Lexer:
-    # Support not just digits, but thousands separators
-    DIGITS = r'(?:\d{1,3}(\d{3}|_)*)'
+    INTEGRAL = r'''
+                # DO NOT REPEAT ME! I REPEAT MYSELF INTERNALLY!
+                (?:
+                    # 1, 12, or the 1 in 1_200.
+                    \d{1,3}
+                    (?:
+                        # The 4, 45, etc. in 1234, 12345, etc.
+                        \d
+                        |
+                        # Support not just digits, but thousands separators
+                        (?:
+                            _\d{3}
+                        )
+                    )*
+                )
+                '''
+    FRACTIONAL = r'''
+                  # DO NOT REPEAT ME! I REPEAT MYSELF INTERNALLY!
+                  (?:
+                      # 1, 12, or the 1 in 1_200.
+                      # TODO: Handle when number of digits % 3 ≠ 0.
+                      \d+
+                      |
+                      (?:
+                          \d{3}
+                          (?:
+                              _\d{3}
+                          )
+                      )*
+                  )
+                  '''
     # String formatting and regex is a tricky business, because of the braces.
     # It works here. Be careful in general!
     NUMBER = r'''
               (?:
-                  {DIGITS}+
+                  # 1, 12, 1_200, 1_200. (notice trailing dot), 1.3
+                  {INTEGRAL}
                   (?:
                   \.
-                  {DIGITS}*
+                  {FRACTIONAL}?
                   )?
               )|(?:
-                  {DIGITS}*
+                  # .2, 0.2, 0.200_200 but not 0.2_200
+                  {INTEGRAL}?
                   \.
-                  {DIGITS}+
+                  {FRACTIONAL}
               )
-              '''.format(DIGITS=DIGITS)
+              '''.format(INTEGRAL=INTEGRAL, FRACTIONAL=FRACTIONAL)
     STR = r'''
            (?:
                '
