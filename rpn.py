@@ -168,6 +168,7 @@ class Machine:
         'tan': _unary(math.tan),
         'tanh': _unary(math.tanh),
         'trunc': _unary(math.trunc),
+        'abs': _unary(abs),
     }
     CMATH = {
         'acos': _unary(cmath.acos),
