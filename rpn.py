@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 
 # TODO: Thousands separator formatting.
+# TODO: Stack right-align numbers
+# TODO: Hex, octal, binary
+# TODO: Macros
 
 from sys import stdin, stderr
 from decimal import Decimal
