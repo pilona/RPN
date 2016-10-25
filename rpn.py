@@ -275,7 +275,7 @@ class Machine:
 
         :param groups: re Match objects on lexemes.
         '''
-        parsed = next(self.parse(groups))
+        parsed = self.parse(groups)
         if self.isstackable(groups):
             self._pshstack(parsed)
         else:
@@ -288,17 +288,17 @@ class Machine:
         :param groups: re Match objects on lexemes.
         '''
         if 'str' in groups:
-            yield groups['__str__']
+            return groups['__str__']
         elif 'number' in groups:
-            yield self._iconvert(groups['number'])
+            return self._iconvert(groups['number'])
         elif 'operator' in groups:
             operator = groups['operator']
             ref = type(self).OPERATORS[operator]
             if self.ofmt is complex:
                 ref = type(self).CMATH.get(operator, ref)
-            yield ref
+            return ref
         elif 'apply' in groups:
-            yield self.apply
+            return self.apply
 
     def isstackable(self, groups):
         '''
