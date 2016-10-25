@@ -21,9 +21,10 @@ Why another RPN calculator?
 '''
 
 # TODO: Thousands separator formatting.
-# TODO: Stack right-align numbers
-# TODO: Hex, octal, binary
+# TODO: Stack center-align numbers, on the decimal point
+# TODO: Hex, octal, binary; yes, as a programmer, I sometimes need these
 # TODO: Macros
+# TODO: complex <-> {polar, reim, cartesian}
 
 from sys import stdin, stderr
 from decimal import Decimal
