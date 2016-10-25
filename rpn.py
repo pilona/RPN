@@ -43,6 +43,11 @@ import regex
 
 
 def wrap_user_errors(fmt):
+    '''
+    Ugly hack decorator that converts exceptions to warnings.
+
+    Passes through UserWarnings.
+    '''
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -57,6 +62,13 @@ def wrap_user_errors(fmt):
 
 
 class Machine:
+    '''
+    Arithmetic stack machine (RPN calculator).
+
+    Takes lexemes and runs them. Assumes to this particular RPN calculator
+    language.
+    '''
+
     FMTS = {
         'i': int,
         'f': float,
@@ -74,6 +86,9 @@ class Machine:
     DEFAULT_PRECISION = None
 
     def _nullary(f):
+        '''
+        Dirty hack to work around 0-arg builtins failing inspect.getsignature.
+        '''
         def wrapped():
             if callable(f):
                 return f()
@@ -89,6 +104,9 @@ class Machine:
     # FIXME: *really* dirty hack around getsignature not working on some
     # builtins.
     def _unary(f):
+        '''
+        Dirty hack to work around 1-arg builtins failing inspect.getsignature.
+        '''
         # FIXME: @wraps(f) just exposes the original bug
         #@wraps(f)
         def wrapped(only):
@@ -101,6 +119,9 @@ class Machine:
         return wrapped
 
     def _binary(f):
+        '''
+        Dirty hack to work around 2-arg builtins failing inspect.getsignature.
+        '''
         #@wraps(f)
         def wrapped(left, right):
             return f(left, right)
@@ -231,6 +252,11 @@ class Machine:
     #}
 
     def __init__(self, verbose=None):
+        '''
+        Create empty stack machine.
+
+        :param verbose: Show stack traces on bad user commands.
+        '''
         self.registers = dict()
         self.stack = deque()
         self.frames = deque([self.stack])
@@ -241,6 +267,11 @@ class Machine:
         # TODO: Endianness
 
     def feed(self, groups):
+        '''
+        Stack or run lexemes on machine.
+
+        :param groups: re Match objects on lexemes.
+        '''
         parsed = next(self.parse(groups))
         if self.isstackable(groups):
             self._pshstack(parsed)
@@ -248,6 +279,11 @@ class Machine:
             self._apply(parsed)
 
     def parse(self, groups):
+        '''
+        Parse lexeme match into objects for machine: numbers, callables, etc.
+
+        :param groups: re Match objects on lexemes.
+        '''
         if 'str' in groups:
             yield groups['__str__']
         elif 'number' in groups:
@@ -262,9 +298,15 @@ class Machine:
             yield self.apply
 
     def isstackable(self, groups):
+        '''
+        Return true if stackable lexeme (e.g., number), rather than runnable.
+        '''
         return bool(groups.keys() & {'str', 'number'})
 
     def _arity(self, f):
+        '''
+        Return number of non-default position alrguments, if callable.
+        '''
         if not callable(f):
             return None
         signature = getsignature(f)
@@ -277,10 +319,23 @@ class Machine:
         return len(positionals)
 
     def apply(self):
+        '''
+        Pop and run callable on top of stack, popping more arguments as needed.
+
+        This is meant to be called externally (e.g., the apply operator), not
+        internally.
+        '''
         f = self._popstack()[0]
         self._apply(type(self).NAMESPACE[f])
 
     def _apply(self, parsed):
+        '''
+        Apply (callable) parsed lexeme to stack, popping arguments as needed.
+
+        Does the real work.
+        '''
+        # Bind non-instance methods to self.
+        # TODO: A better way of detecting this?
         if parsed in type(self).FUNCTIONS.values():
             parsed = partial(parsed, self)
         # If you don't do this, you'll do 2**9 when you say 9 2 ^ instead of
@@ -292,19 +347,32 @@ class Machine:
 
     @wrap_user_errors('Cannot convert {1}')
     def _iconvert(self, number):
+        '''
+        Convert number to intended internal representation on input.
+        '''
+        # Handle the underscores in here. Ugly. FIXME?
         return self.ifmt(number.replace('_', ''))
 
     @wrap_user_errors('Cannot convert {1}')
     def _oconvert(self, number):
+        '''
+        Convert number to indended representation on output.
+        '''
         return self.ofmt(number)
 
     def _round(self, n):
+        '''
+        Round number to precision (on output) if machine set to round.
+        '''
         if self.precision is None:
             return n
         else:
             return round(n, self.precision)
 
     def print(self, *args, **kwargs):
+        '''
+        Round and convert/format args according to machine settings.
+        '''
         return print(*[self._round(self._oconvert(arg))
                        for arg
                        in args],
@@ -331,11 +399,19 @@ class Machine:
         self.print(*reversed(self.stack), sep='\n')
 
     def _pshstack(self, *new):
+        '''
+        Push all elements onto stack, leftmost at the bottom.
+        '''
         self.stack.extend(new)
 
     pshstack = _pshstack
 
     def _popstack(self, n=1):
+        '''
+        Pop specified number of args from stack, topmost first.
+
+        Warn if not enough args.
+        '''
         if len(self.stack) < n:
             raise UserWarning('Less than {} elements on stack'.format(n))
         return [self.stack.pop() for _ in range(n)]
@@ -378,6 +454,9 @@ class Machine:
 
     @wrap_user_errors('No such register')
     def load(self, name):
+        '''
+        Load variable value into stack.
+        '''
         self._pshstack(self.registers[name])
 
     def store(self, value, name):
@@ -475,6 +554,13 @@ class Machine:
 
 
 class Lexer:
+    '''
+    Lexer for the RPN *regular* grammar.
+
+    For consistency, for now, needs to be instantiated, despite holding no
+    internal state.
+    '''
+    # Integral part of a number
     INTEGRAL = r'''
                 # DO NOT REPEAT ME! I REPEAT MYSELF INTERNALLY!
                 (?:
@@ -566,6 +652,11 @@ class Lexer:
                    0)
 
     def lex(self, line):
+        '''
+        Take a line and return all lexemes.
+
+        Doesn't yield incomplete or incorrect lexemes, stopping on first bad.
+        '''
         while line:
             match = regex.match(type(self).LEXEME, line,
                                 flags=type(self).FLAGS)
@@ -575,12 +666,21 @@ class Lexer:
             line = line[len(match.group(0)):]
 
     def isfeedable(self, match):
+        '''
+        Return True if lexeme can be fed to machine.
+        '''
         return 'space' not in self.matchedgroups(match).keys()
 
     def isimmediate(self, match):
+        '''
+        Return true if lexeme is unambiguously complete.
+        '''
         return 'immediate' in match.groupdict()
 
     def matchedgroups(self, match):
+        '''
+        Yield lexeme matches.
+        '''
         return {key: value
                 for key, value
                 in match.groupdict().items()
@@ -588,7 +688,13 @@ class Lexer:
 
 
 class CLI:
+    '''
+    Command line interface to RPN system.
+    '''
     def dumper(self):
+        '''
+        Dump all lexemes matches, parse, and arity.
+        '''
         machine = Machine()
         lexer = Lexer()
         print('[groups]\t<repr(repr)>\t<arity>')
@@ -603,6 +709,9 @@ class CLI:
                       sep='\t')
 
     def executor(self):
+        '''
+        Run machine (RPN calculator).
+        '''
         machine = Machine(verbose=self.args.verbose)
         lexer = Lexer()
         for line in self.args.expressions:
@@ -616,14 +725,25 @@ class CLI:
                             warn(e.args[1])
 
     def grammar(self):
+        '''
+        Print manual pretty-printed grammar.
+        '''
         with open('grammar.pcre') as fp:
             print(fp.read().rstrip())
 
     def raw_grammar(self):
+        '''
+        Print current internally defined grammar.
+        '''
         lexer = Lexer()
         print(lexer.LEXEME)
 
     def __init__(self):
+        '''
+        Create ready to run CLI.
+
+        Does not run or parse command line arguments.
+        '''
         self.argument_parser = ArgumentParser(description='RPN calculator')
         self.argument_parser.add_argument('-v', '--verbose',
                                           action='store_true')
@@ -643,6 +763,9 @@ class CLI:
                                           expressions=stdin)
 
     def run(self, *args):
+        '''
+        Run CLI, given these args, or previously passed CLI args.
+        '''
         self.args = self.argument_parser.parse_args(*args)
         self.args.action()
 
