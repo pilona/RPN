@@ -132,6 +132,7 @@ class Machine:
             pass
         return wrapped
 
+    # Arithmetic operators on the items of a machine.
     BUILTINS = {
         # Arithmetic
         '+': _binary(operator.__add__),
@@ -153,6 +154,7 @@ class Machine:
         '~': _unary(operator.__invert__),
     }
 
+    # Unicode to function translation
     SYMBOLS = {
         # TODO: U+2200-U+222A, and more
         '\N{INFINITY}': _nullary(math.inf),
@@ -211,6 +213,7 @@ class Machine:
         'trunc': _unary(math.trunc),
         'abs': _unary(abs),
     }
+    # FIXME: Workaround for getsignature not working on these:
     CMATH = {
         'acos': _unary(cmath.acos),
         'acosh': _unary(cmath.acosh),
@@ -516,6 +519,7 @@ class Machine:
             raise KeyError
         help(ref)
 
+    # Language mapping to stack operations/callables.
     # TODO: Create proper lexer class bound to a Machine
     FUNCTIONS = {
         # TODO: How to bind to machine?
@@ -539,14 +543,23 @@ class Machine:
         'K': loadprecision,
     }
 
+    # Aliases to oft used functions, so we don't need to type out their full
+    # name, quoted, and apply each time.
     SHORTHAND = {
+        # 'v', like in UNIX dc.
         'v': _unary(math.sqrt),
+        # Unfortunately, that means you need to 3 4j + instead of 3j4, but hey,
+        # it's consistent! Like _ (unary minus). No special casing. Wonder if I
+        # should exceptionally make these prefix operators…
         'j': lambda n: complex(0, n)
     }
 
+    # All operators, whether symbols, builtins, etc., all callable.
+    # Not all functions are operators though.
     OPERATORS = dict()
     for namespace in SYMBOLS, FUNCTIONS, BUILTINS, SHORTHAND:
         OPERATORS.update(namespace)
+    # The namespace of all visible callables.
     NAMESPACE = dict()
     for namespace in CMATH, MATH:
         NAMESPACE.update(namespace)
@@ -577,6 +590,7 @@ class Lexer:
                     )*
                 )
                 '''
+    # Fractional part of a number
     FRACTIONAL = r'''
                   # DO NOT REPEAT ME! I REPEAT MYSELF INTERNALLY!
                   (?:
@@ -592,6 +606,7 @@ class Lexer:
                       )*
                   )
                   '''
+    # Number, of any kind supported by grammar.
     # String formatting and regex is a tricky business, because of the braces.
     # It works here. Be careful in general!
     NUMBER = r'''
@@ -609,6 +624,7 @@ class Lexer:
                   {FRACTIONAL}
               )
               '''.format(INTEGRAL=INTEGRAL, FRACTIONAL=FRACTIONAL)
+    # String
     STR = r'''
            (?:
                '
@@ -635,15 +651,19 @@ class Lexer:
     OPERATOR = r'(?:' + r'|'.join(map(regex.escape, Machine.OPERATORS)) + r')'
     # TODO: a and A instead? Would make this no longer a special case, which is
     # kinda nice.
+    # $ like in Haskell apply, but of course, eagerly evaluated, not curriable.
     APPLY = r'\$'
     SPACE = r'\s+'
 
+    # Immediate, as in immediately complete lexeme
     IMMEDIATE = r'(?<operator>' + OPERATOR + r')|' \
                 r'(?<apply>' + APPLY + r')|' \
                 r'(?<space>' + SPACE + r')'
+    # All possible lexemes.
     LEXEME = r'(?<number>' + NUMBER + r')|' \
              r'(?<str>' + STR + r')|' \
              r'(?<immediate>' + IMMEDIATE + r')'
+    # Default regex flags for matching lexemes
     FLAGS = reduce(operator.__or__,
                    {regex.POSIX,
                        regex.DOTALL,
