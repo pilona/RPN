@@ -18,6 +18,12 @@ Why another RPN calculator?
 - Disagreed with RPyN implementation; limited feature set.
 - hcpy is missing a *few* things, and I don't agree with the grammar; shorthand
   should triump over convenience of the lesser used unquoted function names.
+- pycalculator's a GUI.
+- rpncalc depends on an external numerical library, and one that you're not
+  likely to already have.
+- stacky is a full blown language, and seems abandoned.
+- pyrpncalc has excessive printing, I don't agree with the code, and lacks a
+  few features I want.
 '''
 
 # TODO: Thousands separator formatting.
