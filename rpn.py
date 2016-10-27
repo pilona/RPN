@@ -39,7 +39,7 @@ from fractions import Fraction, gcd
 from inspect import signature as getsignature, Parameter
 from functools import reduce, wraps, partial
 from collections import deque
-from argparse import ArgumentParser, REMAINDER
+from argparse import ArgumentParser, REMAINDER, OPTIONAL
 from warnings import warn
 
 import operator
@@ -777,15 +777,16 @@ class CLI:
         self.argument_parser.add_argument('-e', '--expression',
                                           nargs=REMAINDER,
                                           dest='expressions')
+        main_groups = self.argument_parser.add_mutually_exclusive_group()
         for short_, long_, action in [('-g', '--grammar',
                                        self.grammar),
                                       ('-G', '--raw-grammar',
                                        self.raw_grammar),
                                       ('-D', '--dump', self.dumper)]:
-            self.argument_parser.add_argument(short_, long_,
-                                              action='store_const',
-                                              const=action,
-                                              dest='action')
+            main_groups.add_argument(short_, long_,
+                                     action='store_const',
+                                     const=action,
+                                     dest='action')
         self.argument_parser.set_defaults(action=self.executor,
                                           expressions=stdin)
 
