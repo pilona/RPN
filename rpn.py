@@ -642,8 +642,8 @@ class CLI:
         self.argument_parser.set_defaults(action=self.executor,
                                           expressions=stdin)
 
-    def run(self):
-        self.args = self.argument_parser.parse_args()
+    def run(self, *args):
+        self.args = self.argument_parser.parse_args(*args)
         self.args.action()
 
 
