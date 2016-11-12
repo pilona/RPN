@@ -348,7 +348,7 @@ class Machine:
         # TODO: A better way of detecting this?
         if parsed in type(self).FUNCTIONS.values():
             parsed = partial(parsed, self)
-        # If you don't do this, you'll do 2**9 when you say 9 2 ^ instead of
+        # If you don't reverse, you'll do 2**9 when you say 9 2 ^ instead of
         # 9**2.
         args = reversed(self._popstack(self._arity(parsed)))
         res = parsed(*args)
