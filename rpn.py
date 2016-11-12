@@ -32,7 +32,8 @@ Why another RPN calculator?
 # TODO: Macros
 # TODO: complex <-> {polar, reim, cartesian}
 
-from sys import stdin, stderr
+from os import isatty
+from sys import stdin, stdout, stderr
 from decimal import Decimal
 from datetime import datetime, time
 from fractions import Fraction, gcd
@@ -718,6 +719,9 @@ class CLI:
     '''
     Command line interface to RPN system.
     '''
+
+    DEFAULT_PROMPT = '> '
+
     def dumper(self):
         '''
         Dump all lexemes matches, parse, and arity.
@@ -765,6 +769,23 @@ class CLI:
         lexer = Lexer()
         print(lexer.LEXEME)
 
+    def _prompting_input(self, it):
+        '''
+        Wrap input stream with a prompt before each.
+
+        - If prompt explicitly specified.
+        - If both stdin/out are a tty
+        '''
+        if (self.args.prompt or
+            isatty(stdin.fileno()) and isatty(stdout.fileno())):
+            prompt = self.args.prompt or self.DEFAULT_PROMPT
+            print(prompt, flush=True, end='')
+            for i in it:
+                yield i
+                print(prompt, flush=True, end='')
+        else:
+            yield from it
+
     def __init__(self):
         '''
         Create ready to run CLI.
@@ -774,9 +795,13 @@ class CLI:
         self.argument_parser = ArgumentParser(description='RPN calculator')
         self.argument_parser.add_argument('-v', '--verbose',
                                           action='store_true')
-        self.argument_parser.add_argument('-e', '--expression',
-                                          nargs=REMAINDER,
-                                          dest='expressions')
+        int_nonint_groups = self.argument_parser.add_mutually_exclusive_group()
+        int_nonint_groups.add_argument('-e', '--expression',
+                                        nargs=REMAINDER,
+                                        dest='expressions')
+        int_nonint_groups.add_argument('-p', '--prompt',
+                                       nargs=OPTIONAL,
+                                       const=self.DEFAULT_PROMPT)
         main_groups = self.argument_parser.add_mutually_exclusive_group()
         for short_, long_, action in [('-g', '--grammar',
                                        self.grammar),
@@ -788,7 +813,7 @@ class CLI:
                                      const=action,
                                      dest='action')
         self.argument_parser.set_defaults(action=self.executor,
-                                          expressions=stdin)
+                                          expressions=self._prompting_input(stdin))
 
     def run(self, *args):
         '''
