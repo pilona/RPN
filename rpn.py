@@ -32,7 +32,7 @@ Why another RPN calculator?
 # TODO: Macros
 # TODO: complex <-> {polar, reim, cartesian}
 
-from os import isatty
+from os import isatty, path
 from sys import stdin, stdout, stderr
 from decimal import Decimal
 from datetime import datetime, time
@@ -43,6 +43,7 @@ from collections import deque
 from argparse import ArgumentParser, REMAINDER, OPTIONAL
 
 import subprocess
+import readline
 import operator
 import math
 import cmath
@@ -783,6 +784,7 @@ class CLI:
     '''
 
     DEFAULT_PROMPT = '> '
+    HISTORY_FILE = '~/.rpn_history'
 
     def dumper(self):
         '''
@@ -808,6 +810,10 @@ class CLI:
         machine = Machine(verbose=self.args.verbose)
         lexer = Lexer()
         for line in self.args.expressions:
+            # TODO: Better check here
+            if self._interactive():
+                readline.add_history(line.strip())
+
             try:
                 for match in lexer.lex(line):
                     if lexer.isimmediate(match) and lexer.isfeedable(match):
@@ -878,6 +884,22 @@ class CLI:
     def _interactive(self):
         return isinstance(self.args.expressions, InteractiveInput)
 
+    def _historied(f):
+        @wraps(f)
+        def wrapped(self, *args, **kwargs):
+            history_path = path.expanduser(type(self).HISTORY_FILE)
+            try:
+                readline.read_history_file(history_path)
+            except FileNotFoundError:
+                pass
+            try:
+                f(self, *args, **kwargs)
+            finally:
+                readline.write_history_file(history_path)
+        return wrapped
+
+
+    @_historied
     def run(self, *args):
         '''
         Run CLI, given these args, or previously passed CLI args.
