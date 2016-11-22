@@ -781,10 +781,10 @@ class CLI:
         print('[groups]\t<repr(repr)>\t<arity>')
         for line in self.args.expressions:
             for match in lexer.lex(line):
-                matched = match.group(0)
-                groups = lexer.matchedgroups(match).keys()
-                parsed = next(machine.parse(match), None)
-                print(*groups,
+                matched = match.group(0)  # the lexeme text itself
+                groups = lexer.matchedgroups(match)
+                parsed = machine.parse(groups)
+                print(*groups.keys(),
                       repr(matched),
                       machine._arity(parsed),
                       sep='\t')
