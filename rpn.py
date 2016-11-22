@@ -42,11 +42,32 @@ from functools import reduce, wraps, partial
 from collections import deque
 from argparse import ArgumentParser, REMAINDER, OPTIONAL
 
+import subprocess
 import operator
 import math
 import cmath
 
 import regex
+
+
+_SELECTIONS = {
+    '+': 'clipboard',
+    '*': 'primary',
+}
+
+
+def _store_selection(data, selection):
+    with subprocess.Popen(['xclip',
+                           '-selection', selection],
+                          stdin=subprocess.PIPE) as xclip:
+        xclip.stdin.write(str(data).encode())
+
+
+def _load_selection(selection):
+    with subprocess.Popen(['xclip',
+                           '-selection', selection,
+                           '-o'], stdout=PIPE) as xclip:
+        return xclip.stdout.read().decode()
 
 
 class RPNError(Exception):
@@ -471,13 +492,34 @@ class Machine:
         '''
         Load variable value into stack.
         '''
+        if name == '_':
+            return self._pshstack(None)
+        elif name in _SELECTIONS:
+            return self._pshstack(_load_selection(_SELECTIONS[name]))
         self._pshstack(self.registers[name])
 
     def store(self, value, name):
         '''
         Store value into variable.
         '''
-        self.registers[name] = value
+        if not name:
+            raise RPNError('Name invalid name {}'.format(repr(name)))
+        elif name == '_':
+            return
+        elif name in _SELECTIONS:
+            return _store_selection(value, _SELECTIONS[name])
+        elif name.isupper():
+            if name not in self.registers:
+                self.registers[name] = value
+            else:
+                self._pshstack(value)
+                raise RPNError("Attempting to assign {} to constant register {}".format(value, repr(name)))
+        elif name.islower():
+            self.registers[name] = value
+        elif name.capitalize() == name:
+            if name not in self.registers:
+                self.registers[name] = []
+            self.registers[name].append(value)
 
     @wrap_user_errors('No such format')
     def storeifmt(self, ifmt):
