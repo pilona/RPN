@@ -625,8 +625,8 @@ class Lexer:
                   # 1, 12, 1_200, 1_200. (notice trailing dot), 1.3
                   {INTEGRAL}
                   (?:
-                  \.
-                  {FRACTIONAL}?
+                      \.
+                      {FRACTIONAL}?
                   )?
               )|(?:
                   # .2, 0.2, 0.200_200 but not 0.2_200
@@ -640,17 +640,17 @@ class Lexer:
            (?:
                '
                (?<__str__>
-               (?:
-                   [^'\\]
-                   |
-                   \\'
-               )*
+                   (?:
+                       [^'\\]
+                       |
+                       \\'
+                   )*
                )
                '
            )|(?:
                \\
                (?<__str__>
-               .
+                   .
                )
            )
            '''
@@ -677,9 +677,9 @@ class Lexer:
     # Default regex flags for matching lexemes
     FLAGS = reduce(operator.__or__,
                    {regex.POSIX,
-                       regex.DOTALL,
-                       regex.VERSION1,
-                       regex.VERBOSE},
+                    regex.DOTALL,
+                    regex.VERSION1,
+                    regex.VERBOSE},
                    0)
 
     def lex(self, line):
@@ -800,8 +800,8 @@ class CLI:
                                           action='store_true')
         int_nonint_groups = self.argument_parser.add_mutually_exclusive_group()
         int_nonint_groups.add_argument('-e', '--expression',
-                                        nargs=REMAINDER,
-                                        dest='expressions')
+                                       nargs=REMAINDER,
+                                       dest='expressions')
         int_nonint_groups.add_argument('-p', '--prompt',
                                        nargs=OPTIONAL,
                                        const=self.DEFAULT_PROMPT)
