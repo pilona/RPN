@@ -41,7 +41,6 @@ from inspect import signature as getsignature, Parameter
 from functools import reduce, wraps, partial
 from collections import deque
 from argparse import ArgumentParser, REMAINDER, OPTIONAL
-from warnings import warn
 
 import operator
 import math
@@ -50,21 +49,25 @@ import cmath
 import regex
 
 
+class RPNError(Exception):
+    pass
+
+
 def wrap_user_errors(fmt):
     '''
     Ugly hack decorator that converts exceptions to warnings.
 
-    Passes through UserWarnings.
+    Passes through RPNErrors.
     '''
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
             try:
                 return f(*args, **kwargs)
-            except UserWarning:
+            except RPNError:
                 raise
             except Exception as e:
-                raise UserWarning(fmt.format(*args, **kwargs), e)
+                raise RPNError(fmt.format(*args, **kwargs), e)
         return wrapper
     return decorator
 
@@ -424,7 +427,7 @@ class Machine:
         Warn if not enough args.
         '''
         if len(self.stack) < n:
-            raise UserWarning('Less than {} element(s) on stack'.format(n))
+            raise RPNError('Less than {} element(s) on stack'.format(n))
         return [self.stack.pop() for _ in range(n)]
 
     @wrap_user_errors('Empty stack')
@@ -750,7 +753,7 @@ class CLI:
                 if lexer.isimmediate(match) and lexer.isfeedable(match):
                     try:
                         machine.feed(lexer.matchedgroups(match))
-                    except UserWarning as e:
+                    except RPNError as e:
                         print(e.args[0])
                         if machine.verbose:
                             warn(e.args[1])
