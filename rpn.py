@@ -755,8 +755,6 @@ class CLI:
                         machine.feed(lexer.matchedgroups(match))
                     except RPNError as e:
                         print(e.args[0])
-                        if machine.verbose:
-                            warn(e.args[1])
 
     def grammar(self):
         '''
