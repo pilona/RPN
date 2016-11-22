@@ -424,7 +424,7 @@ class Machine:
         Warn if not enough args.
         '''
         if len(self.stack) < n:
-            raise UserWarning('Less than {} elements on stack'.format(n))
+            raise UserWarning('Less than {} element(s) on stack'.format(n))
         return [self.stack.pop() for _ in range(n)]
 
     @wrap_user_errors('Empty stack')
