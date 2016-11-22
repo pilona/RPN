@@ -765,6 +765,18 @@ class Lexer:
                 if value and key != 'immediate'}
 
 
+class InteractiveInput:
+    def __init__(self, it, prompt):
+        self.it = it
+        self.prompt = prompt
+
+    def __iter__(self):
+        print(self.prompt, flush=True, end='')
+        for i in self.it:
+            yield i
+            print(self.prompt, flush=True, end='')
+
+
 class CLI:
     '''
     Command line interface to RPN system.
@@ -818,22 +830,21 @@ class CLI:
         lexer = Lexer()
         print(lexer.LEXEME)
 
-    def _prompting_input(self, it):
+    def _prompting_input(self):
         '''
-        Wrap input stream with a prompt before each.
+        Return prompting stdin.__iter__ decorator...
 
-        - If prompt explicitly specified.
-        - If both stdin/out are a tty
+        If either:
+        - prompt explicitly specified.
+        - both stdin/out are a tty
         '''
-        if (self.args.prompt or
-            isatty(stdin.fileno()) and isatty(stdout.fileno())):
-            prompt = self.args.prompt or self.DEFAULT_PROMPT
-            print(prompt, flush=True, end='')
-            for i in it:
-                yield i
-                print(prompt, flush=True, end='')
+        if self.args.prompt or \
+           isatty(stdin.fileno()) and isatty(stdout.fileno()):
+            return InteractiveInput(stdin,
+                                    prompt=self.args.prompt or
+                                           self.DEFAULT_PROMPT)
         else:
-            yield from it
+            return stdin
 
     def __init__(self):
         '''
@@ -862,13 +873,18 @@ class CLI:
                                      const=action,
                                      dest='action')
         self.argument_parser.set_defaults(action=self.executor,
-                                          expressions=self._prompting_input(stdin))
+                                          expressions=stdin)
+
+    def _interactive(self):
+        return isinstance(self.args.expressions, InteractiveInput)
 
     def run(self, *args):
         '''
         Run CLI, given these args, or previously passed CLI args.
         '''
         self.args = self.argument_parser.parse_args(*args)
+        if self.args.expressions is stdin:
+            self.args.expressions = self._prompting_input()
         self.args.action()
 
 
