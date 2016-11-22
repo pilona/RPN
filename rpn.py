@@ -740,6 +740,8 @@ class Lexer:
                 break
             yield match
             line = line[len(match.group(0)):]
+        if line:
+            raise RPNError("Couldn\'t lex {0}".format(line.strip()))
 
     def isfeedable(self, match):
         '''
@@ -794,12 +796,13 @@ class CLI:
         machine = Machine(verbose=self.args.verbose)
         lexer = Lexer()
         for line in self.args.expressions:
-            for match in lexer.lex(line):
-                if lexer.isimmediate(match) and lexer.isfeedable(match):
-                    try:
+            try:
+                for match in lexer.lex(line):
+                    if lexer.isimmediate(match) and lexer.isfeedable(match):
                         machine.feed(lexer.matchedgroups(match))
-                    except RPNError as e:
-                        print(e.args[0])
+            # Abort entire rest of line, makes sense anyway
+            except RPNError as e:
+                print(e.args[0], file=stderr)
 
     def grammar(self):
         '''
