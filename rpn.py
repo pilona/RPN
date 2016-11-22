@@ -540,7 +540,10 @@ class Machine:
         '''
         Set output rounding.
         '''
-        self.precision = int(precision)
+        if precision is None:
+            self.precision = None
+        else:
+            self.precision = int(precision)
 
     def loadifmt(self):
         '''
