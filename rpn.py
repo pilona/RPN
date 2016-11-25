@@ -494,10 +494,13 @@ class Machine:
         Load variable value into stack.
         '''
         if name == '_':
-            return self._pshstack(None)
+            self._pshstack(None)
         elif name in _SELECTIONS:
-            return self._pshstack(_load_selection(_SELECTIONS[name]))
-        self._pshstack(self.registers[name])
+            self._pshstack(_load_selection(_SELECTIONS[name]))
+        elif not name.isupper() and name.capitalize() == name:
+            self._pshstack(self.registers[name].pop())
+        else:
+            self._pshstack(self.registers[name])
 
     def store(self, value, name):
         '''
