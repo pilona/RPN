@@ -17,7 +17,7 @@ Why another RPN calculator?
 - pyrpn is woefully incomplete.
 - Disagreed with RPyN implementation; limited feature set.
 - hcpy is missing a *few* things, and I don't agree with the grammar; shorthand
-  should triump over convenience of the lesser used unquoted function names.
+  should trump the convenience of the lesser used unquoted function names.
 - pycalculator's a GUI.
 - rpncalc depends on an external numerical library, and one that you're not
   likely to already have.
