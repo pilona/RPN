@@ -3,11 +3,6 @@
 .eggs
 __pycache__
 
-# Notebooks are not for production, but to be converted.
-# The only valid use case is to have a snapshot for reference, though
-# they really belong in the IRAP repo.
-*.ipynb
-
 # Coverage state, reports, etc.
 .coverage
 /htmlcov
@@ -16,5 +11,3 @@ __pycache__
 # Never commit this. See the sample.
 .env
 
-# GitHub wiki
-/wiki
