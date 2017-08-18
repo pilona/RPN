@@ -18,7 +18,7 @@ def _store_selection(data, selection):
 def _load_selection(selection):
     with subprocess.Popen(['xclip',
                            '-selection', selection,
-                           '-o'], stdout=PIPE) as xclip:
+                           '-o'], stdout=subprocess.PIPE) as xclip:
         return xclip.stdout.read().decode()
 
 
