@@ -11,3 +11,4 @@ __pycache__
 # Never commit this. See the sample.
 .env
 
+/venv
