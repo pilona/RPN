@@ -144,11 +144,11 @@ class CLI:
         return wrapped
 
     @_historied
-    def run(self, *args):
+    def run(self, *, args=None):
         '''
         Run CLI, given these args, or previously passed CLI args.
         '''
-        self.args = self.argument_parser.parse_args(*args)
+        self.args = self.argument_parser.parse_args(args)
         if self.args.expressions is stdin:
             self.args.expressions = self._prompting_input()
         self.args.action()
