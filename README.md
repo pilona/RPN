@@ -14,7 +14,7 @@ macros.
 
 - Wanted one in Python.
 - [`rpn`](https://pypi.org/project/rpn/) has a limited feature set.
-- Didn't know about `lerpn`.
+- Didn't know about [`lerpn`](https://pypi.org/project/lerpn/).
 - [`pyrpn`](https://pypi.org/project/pyrpn/) is woefully incomplete.
 - Disagreed with [`RPyN`](https://pypi.org/project/RPyN/) implementation;
   limited feature set.
