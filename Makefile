@@ -7,8 +7,7 @@ check:
 	@flake8 --select=F rpn
 
 test:
-	@python setup.py test --addopts -vv \
-	                      --addopts --cov=rpn
+	@python setup.py test --addopts -vv
 
 coverage:
 	@coverage html
