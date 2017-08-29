@@ -6,3 +6,21 @@ python:
 - "nightly"
 - "pypy3"
 script: make test
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "Bn2G6h0a7KLLbiJo6LIH4V6QLKEEoibQeN1VaWlY01wuh4WHEsAgbzTh5PWVvra1AeIZ3uVuI1pl2l4lubh8QMi5NX9zjFaaQvgieoxzqjMlynsyoh1B5X7WbhfA1vPSNizS1svyRDC0TKrWUb1Pj8AD5lMaLCbWuj46NPJuUPYHkt6OEHPJz4xs+iolJU9wEc5Rgr+YYNNxFs4dsoGmW+WVZb+2CXxFKpbamh0ElOGOm7yF87phyy7XGeO/CrWRoK4kOJVTG4J7r1yeJeFV6HVhTsCr528vnc++satQov9EYUudZsUagQYOKjKUYoFU9gFp4YlkeVqAaQr/XuaNAlfZ3IudkphzkGSDm8MTN0aYN8/n+J26AiuW1SOtZBIzWODRBU1TRS/8iAIa46rogHnYN0CXHqxVXjwVF8vYx6IZlA+oWdyQ1vm0JV20ab4Nf2e7Jie7cE5lAyTUqDVcCG2bDpSU3I7WiS8tZoDe+1shyuNXpcQE1WB6jOYIvKxLmEomQd5qvyn5zxrJ0nJdEUwNSFPwj7X6+auOlD24XoYptfvhe6zK/2PjFRdtNFB2bRkPNokI7eHFaPykZKG9YrlJi3IvOCBlx+M2qdbfgxlKcLFsVm6j4lCUVgxwMO+/JsZAdF/DjTFroApyjWQJ3hY7jQWkXqEfQHCIGBeBIqI="
+
+before_install:
+      - printf '' | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+
+addons:
+  coverity_scan:
+    project:
+      name: "pilona/RPN"
+      description: "Build submitted via Travis CI"
+    notification_email: alp+github@alexpilon.ca
+    build_command_prepend: ""
+    build_command:   "pip install ."
+    branch_pattern: master
