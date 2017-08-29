@@ -1,3 +1,6 @@
+[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/10257.svg)](https://scan.coverity.com/projects/pilona-rpn)
+[![Travis](https://img.shields.io/travis/rust-lang/rust.svg)](https://travis-ci.org/pilona/RPN)
+
 ## Overview ##
 
 Supports plain old arithmetic, bitwise, Python's mathematical functions, and
