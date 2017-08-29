@@ -1,0 +1,35 @@
+{
+    ".projections.json": {
+        "type": "projections"
+    },
+    "rpn/*.py": {
+        "type": "rpn",
+        "alternate": "tests/test_{}.py",
+        "console": "ipython",
+        "start": "rpn",
+        "_make": "make check",
+        "_lint": "make lint"
+    },
+    "tests/test_*.py": {
+        "type": "test",
+        "alternate": "rpn/{}.py",
+        "start": "make test",
+        "make": "python setup.py test --addopts -q --addopts {file} --addopts --tb=line",
+        "console": "python setup.py test --addopts {file} --addopts --pdb --addopts {file}",
+        "_lint": "make lint"
+    },
+    "setup.py": {
+        "type": "setup",
+        "alternate": "requirements.txt",
+        "make": "pip install -e .",
+        "_lint": "make lint"
+    },
+    "requirements.txt": {
+        "type": "requirements",
+        "alternate": "setup.py",
+        "make": "pip install -r requirements.txt"
+    },
+    ".travis.yml": {
+        "type": "travis"
+    }
+}
