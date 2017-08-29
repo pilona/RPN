@@ -11,7 +11,7 @@ Why another RPN calculator?
 
 - Wanted one in Python.
 - rpn has a limited feature set.
-- Didn't know about lrpn.
+- Didn't know about lerpn.
 - pyrpn is woefully incomplete.
 - Disagreed with RPyN implementation; limited feature set.
 - hcpy is missing a *few* things, and I don't agree with the grammar; shorthand
