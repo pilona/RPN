@@ -47,8 +47,11 @@ class Machine:
                 return f()
             else:
                 return f
-        try:
+        if callable(f):
             wrapped.__doc__ = f.__doc__
+        else:
+            wrapped.__doc__ = str(f)
+        try:
             wrapped.__name__ = f.__name__
         except AttributeError:
             pass
