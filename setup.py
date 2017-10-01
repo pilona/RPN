@@ -27,4 +27,5 @@ setup(
         'coverage',
     ],
     scripts=glob('bin/*'),
+    license='ISC',
 )
