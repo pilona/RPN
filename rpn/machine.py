@@ -95,6 +95,18 @@ class Machine:
         f.__doc__ = doc
         return f
 
+    def _cdispatch(mathfunc, cmathfunc):
+        '''
+        Single dispatch to mathfunc or cmathfunc on unary argument type
+        '''
+        def wrapped(only):
+            if isinstance(only, complex):
+                return cmathfunc(only)
+            else:
+                return mathfunc(only)
+        wrapped.__doc__ = mathfunc.__doc__
+        return wrapped
+
     # Arithmetic operators on the items of a machine.
     BUILTINS = {
         # Arithmetic
@@ -537,7 +549,7 @@ class Machine:
     # name, quoted, and apply each time.
     SHORTHAND = {
         # 'v', like in UNIX dc.
-        'v': _unary(math.sqrt),
+        'v': _cdispatch(math.sqrt, cmath.sqrt),
         # Unfortunately, that means you need to 3 4j + instead of 3j4, but hey,
         # it's consistent! Like _ (unary minus). No special casing. Wonder if I
         # should exceptionally make these prefix operators…
