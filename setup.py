@@ -6,7 +6,7 @@ setup(
     name='rpn',
     description='RPN calculator',
     url='https://github.com/pilona/RPN',
-    version='0.1',
+    version='0.2',
     install_requires=[
         'regex',
     ],
