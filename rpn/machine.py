@@ -67,8 +67,8 @@ class Machine:
         #@wraps(f)
         def wrapped(only):
             return f(only)
+        wrapped.__doc__ = f.__doc__
         try:
-            wrapped.__doc__ = f.__doc__
             wrapped.__name__ = f.__name__
         except AttributeError:
             pass
@@ -81,8 +81,8 @@ class Machine:
         #@wraps(f)
         def wrapped(left, right):
             return f(left, right)
+        wrapped.__doc__ = f.__doc__
         try:
-            wrapped.__doc__ = f.__doc__
             wrapped.__name__ = f.__name__
         except AttributeError:
             pass
