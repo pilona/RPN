@@ -67,13 +67,6 @@ class CLI:
             except RPNError as e:
                 print(e.args[0], file=stderr)
 
-    def grammar(self):
-        '''
-        Print manual pretty-printed grammar.
-        '''
-        with open('grammar.pcre') as fp:
-            print(fp.read().rstrip())
-
     def raw_grammar(self):
         '''
         Print current internally defined grammar.
@@ -114,9 +107,7 @@ class CLI:
                                        nargs=OPTIONAL,
                                        const=self.DEFAULT_PROMPT)
         main_groups = self.argument_parser.add_mutually_exclusive_group()
-        for short_, long_, action in [('-g', '--grammar',
-                                       self.grammar),
-                                      ('-G', '--raw-grammar',
+        for short_, long_, action in [('-G', '--raw-grammar',
                                        self.raw_grammar),
                                       ('-D', '--dump', self.dumper)]:
             main_groups.add_argument(short_, long_,
