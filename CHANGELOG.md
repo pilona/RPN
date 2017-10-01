@@ -10,9 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `printhelp` (`V`) command; like `h`, but also showing a 1-line summary
 - ISC license
-- rlwrapped rpn binary
+- `rlwrap`ped rpn binary
 ### Fixed
-- Operator v (sqrt) with complex values
-- Documentation for operator j
+- Operator `v` (`sqrt`) with complex values
+- Documentation for operator `j`
 ### Removed
-- Unmaintanable pretty-printed grammar
+- Unmaintainable pretty-printed grammar
