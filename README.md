@@ -7,7 +7,7 @@ Supports plain old arithmetic, bitwise, Python's mathematical functions, and
 your usual stack operators. Not intended to be Turing-complete!
 
 Originally intended to be a more powerful `dc`, which lacked many mathematical
-functions. Is not a superset of `dc`'s featureset though. It notably lacks
+functions. Is not a superset of `dc`'s feature set though. It notably lacks
 macros.
 
 ## Why another RPN calculator? ##
