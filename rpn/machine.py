@@ -462,18 +462,18 @@ class Machine:
         Print table of possible commands and abbreviated help
         '''
         print('functions:', file=stderr)
-        for key, function in sorted(type(self).NAMESPACE.items()):
-            print(key, self._mathdoc(key, function),
+        for key, mathfunc in sorted(type(self).NAMESPACE.items()):
+            print(key, self._mathdoc(key, mathfunc),
                   sep=': ',
                   file=stderr)
         print('\noperators:', file=stderr)
-        for key, operator in sorted(type(self).OPERATORS.items()):
-            print(key, self._operatordoc(operator),
+        for key, opfunc in sorted(type(self).OPERATORS.items()):
+            print(key, self._operatordoc(opfunc),
                   sep=': ',
                   file=stderr)
         print('\nformats:', file=stderr)
-        for key, function in sorted(type(self).FMTS.items()):
-            print(key, function.__name__,
+        for key, formatter in sorted(type(self).FMTS.items()):
+            print(key, formatter.__name__,
                   sep=': ',
                   file=stderr)
 
