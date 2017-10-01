@@ -58,7 +58,32 @@ List available functions and operators:
     operators: ! % * + - / = A H I K O P R ^ _ a c d f h i j k l o p r s v x ~ « ° » ∞
     formats: D F b c d f i s t
 
-Print pydoc of a particular operator:
+List in long form:
+
+    > V
+    functions:
+    abs: Return the absolute value of the argument.
+    acos: acos(x)
+    acosh: acosh(x)
+    […]
+
+    operators:
+    !: not_(a) -- Same as not a.
+    %: mod(a, b) -- Same as a % b.
+    *: mul(a, b) -- Same as a * b.
+    […]
+    K: Push output rounding to top of stack.
+    O: Push output format function to top of stack.
+    […]
+    v: sqrt(x)
+    ~: invert(a) -- Same as ~a.
+
+    formats:
+    D: Decimal
+    F: Fraction
+    […]
+
+Call Python `help` on a particular operator:
 
     > \%H
     Help on function mod in module __main__:

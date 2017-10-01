@@ -2,7 +2,7 @@ from sys import stderr
 from decimal import Decimal
 from datetime import datetime, time
 from fractions import Fraction, gcd
-from inspect import signature as getsignature, Parameter
+from inspect import signature as getsignature, getdoc, Parameter
 from functools import wraps, partial
 from collections import deque
 
@@ -430,6 +430,53 @@ class Machine:
         print('operators:', *sorted(type(self).OPERATORS), file=stderr)
         print('formats:', *sorted(type(self).FMTS), file=stderr)
 
+    @staticmethod
+    def _mathdoc(key, function):
+        '''
+        Abbreviate math.* and cmath.* documentation
+
+        Those functions often start with their signature, which isn't exactly
+        useful.
+        '''
+        doclines = [line.strip()
+                    for line
+                    in getdoc(function).splitlines()
+                    if line]
+        if doclines[0].startswith(key) and len(doclines) > 1:
+            return doclines[1]
+        else:
+            return doclines[0]
+
+    @staticmethod
+    def _operatordoc(opfunc):
+        '''
+        Return cleaned up operator documentation
+        '''
+        if opfunc.__doc__:
+            return getdoc(opfunc).splitlines()[0].strip()
+        else:
+            return opfunc.__name__
+
+    def verbosehelp(self):
+        '''
+        Print table of possible commands and abbreviated help
+        '''
+        print('functions:', file=stderr)
+        for key, function in sorted(type(self).NAMESPACE.items()):
+            print(key, self._mathdoc(key, function),
+                  sep=': ',
+                  file=stderr)
+        print('\noperators:', file=stderr)
+        for key, operator in sorted(type(self).OPERATORS.items()):
+            print(key, self._operatordoc(operator),
+                  sep=': ',
+                  file=stderr)
+        print('\nformats:', file=stderr)
+        for key, function in sorted(type(self).FMTS.items()):
+            print(key, function.__name__,
+                  sep=': ',
+                  file=stderr)
+
     @wrap_user_errors('No such register')
     def load(self, name):
         '''
@@ -534,6 +581,7 @@ class Machine:
         # TODO: Clear all the stacks
         'c': clrstack,
         'h': printhelp,
+        'V': verbosehelp,
         'H': help,
         's': store,
         'l': load,
