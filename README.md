@@ -108,3 +108,15 @@ Play with negative numbers. There is not syntactical support for prefix unary
 minus. It's done using the unary minus (postfix) operator.
 
     > 1_ 1 +
+
+## Stability ##
+
+- No tests at the moment
+- Interface subject to change at any moment; ruthlessly clean up or refactor
+  rather than keep bad design around.
+
+## Roadmap ##
+
+- TUI mode (e.g., with `curses`) or immediate input mode (`CBREAK` + echo)
+    - Would ideally preserve output on exit
+- Proper name for PyPI
