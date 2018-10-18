@@ -1,10 +1,9 @@
 from os import isatty, path
-from sys import stdin, stdout, stderr
+from sys import stdin, stdout, stderr, exit
 from functools import wraps
 from argparse import ArgumentParser, REMAINDER, OPTIONAL
 
-import rlcompleter
-import readline
+from prompt_toolkit import PromptSession
 
 from .util import RPNError
 from .machine import Machine
@@ -12,15 +11,36 @@ from .lexer import Lexer
 
 
 class InteractiveInput:
-    def __init__(self, it, prompt):
-        self.it = it
+    def __init__(self, prompt):
         self.prompt = prompt
 
     def __iter__(self):
-        print(self.prompt, flush=True, end='')
-        for i in self.it:
-            yield i
-            print(self.prompt, flush=True, end='')
+        try:
+            session = PromptSession(message=self.prompt,
+                                    vi_mode=True,
+                                    enable_suspend=True,
+                                    enable_open_in_editor=True,
+                                    # Persistent
+                                    history=None,  # TODO
+                                    # Stack size? Top of stack?
+                                    rprompt=None,  # TODO
+                                    # TODO:
+                                    # - Stack size?
+                                    # - Editing mode?
+                                    # - I/O format, rounding?
+                                    # - Hints? Help?
+                                    # - Truncated stack?
+                                    bottom_toolbar=None,  # TODO
+                                    prompt_continuation=' ' * len(self.prompt),
+                                    # Debatable. Interferes with X11 selection.
+                                    mouse_support=True,
+                                    # Certainly not! But be explicit.
+                                    erase_when_done=False)
+            # TODO: colour, lexing, completion
+            while True:
+                yield session.prompt()
+        except EOFError:
+            return
 
 
 class CLI:
@@ -55,16 +75,14 @@ class CLI:
         machine = Machine(verbose=self.args.verbose)
         lexer = Lexer()
         for line in self.args.expressions:
-            # TODO: Better check here
-            if self._interactive():
-                readline.add_history(line.strip())
-
             try:
                 for match in lexer.lex(line):
                     if lexer.isimmediate(match) and lexer.isfeedable(match):
                         machine.feed(lexer.matchedgroups(match))
             # Abort entire rest of line, makes sense anyway
             except RPNError as e:
+                # FIXME: broken with prompt_toolkit. Moves cursor up two lines
+                # instead.
                 print(e.args[0], file=stderr)
 
     def raw_grammar(self):
@@ -84,9 +102,8 @@ class CLI:
         '''
         if self.args.prompt or \
            isatty(stdin.fileno()) and isatty(stdout.fileno()):
-            return InteractiveInput(stdin,
-                                    prompt=self.args.prompt or
-                                           self.DEFAULT_PROMPT)
+            return InteractiveInput(prompt=self.args.prompt or
+                                    self.DEFAULT_PROMPT)
         else:
             return stdin
 
@@ -120,21 +137,6 @@ class CLI:
     def _interactive(self):
         return isinstance(self.args.expressions, InteractiveInput)
 
-    def _historied(f):
-        @wraps(f)
-        def wrapped(self, *args, **kwargs):
-            history_path = path.expanduser(type(self).HISTORY_FILE)
-            try:
-                readline.read_history_file(history_path)
-            except FileNotFoundError:
-                pass
-            try:
-                f(self, *args, **kwargs)
-            finally:
-                readline.write_history_file(history_path)
-        return wrapped
-
-    @_historied
     def run(self, *, args=None):
         '''
         Run CLI, given these args, or previously passed CLI args.
@@ -142,4 +144,7 @@ class CLI:
         self.args = self.argument_parser.parse_args(args)
         if self.args.expressions is stdin:
             self.args.expressions = self._prompting_input()
-        self.args.action()
+        try:
+            self.args.action()
+        except KeyboardInterrupt:
+            exit(1)
