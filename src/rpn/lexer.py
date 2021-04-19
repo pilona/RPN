@@ -1,3 +1,4 @@
+from typing import Iterable, Match
 from functools import reduce
 import operator
 
@@ -76,6 +77,8 @@ class Lexer:
                    (?:
                        [^'\\]
                        |
+                       \\\\
+                       |
                        \\'
                    )*
                )
@@ -115,7 +118,7 @@ class Lexer:
                     regex.VERBOSE},
                    0)
 
-    def lex(self, line):
+    def lex(self, line: str) -> Iterable[Match]:
         '''
         Take a line and return all lexemes.
 
@@ -151,3 +154,8 @@ class Lexer:
                 for key, value
                 in match.groupdict().items()
                 if value and key != 'immediate'}
+
+
+__all__ = (
+    'Lexer',
+)
