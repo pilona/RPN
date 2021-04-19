@@ -1,7 +1,7 @@
 from sys import stderr
 from decimal import Decimal
 from datetime import datetime, time
-from fractions import Fraction, gcd
+from fractions import Fraction
 from inspect import signature as getsignature, getdoc, Parameter
 from functools import wraps, partial
 from collections import deque
@@ -614,4 +614,4 @@ class Machine:
     NAMESPACE = dict()
     for namespace in CMATH, MATH:
         NAMESPACE.update(namespace)
-    NAMESPACE['gcd'] = gcd
+    NAMESPACE['gcd'] = math.gcd
