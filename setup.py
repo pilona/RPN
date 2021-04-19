@@ -14,21 +14,23 @@ setup(
     author='Alex Pilon',
     author_email='alp@alexpilon.ca',
     packages=['rpn'],
+    package_dir={'': 'src'},
+    include_package_data=True,
+    zip_safe=False,
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
     setup_requires=[
         'setuptools_scm',
     ],
-    #setup_requires=[
-    #    # run pytest, coverage and checks when running python setup.py test.
-    #    'pytest-runner',
-    #    'pytest-cov',
-    #    'pytest-flakes',
-    #],
     tests_require=[
         'pytest',
+        'pytest-cov',
         'coverage',
+        'flake8',
+        'bandit',
+        'mypy',
+        'safety',
     ],
     scripts=glob('bin/*'),
     license='ISC',

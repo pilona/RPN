@@ -1,2 +1,12 @@
 [run]
 branch = true
+source =
+    venv/lib/python3.9/site-packages/rpn
+    # pip install -e ., do not let this in prod
+    #src/rpn
+
+[report]
+sort = cover
+
+[html]
+extra_css = .coverage-extra_css.css

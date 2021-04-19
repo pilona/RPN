@@ -2,7 +2,7 @@
     ".projections.json": {
         "type": "projections"
     },
-    "rpn/*.py": {
+    "src/rpn/*.py": {
         "type": "rpn",
         "alternate": "tests/test_{}.py",
         "console": "ipython",
@@ -12,10 +12,10 @@
     },
     "tests/test_*.py": {
         "type": "test",
-        "alternate": "rpn/{}.py",
+        "alternate": "src/rpn/{}.py",
         "start": "make test",
-        "make": "python setup.py test --addopts -q --addopts {file} --addopts --tb=line",
-        "console": "python setup.py test --addopts {file} --addopts --pdb --addopts {file}",
+        "make": "pytest --cov={file} --cov-append --tb=line {file}",
+        "console": "pytest --cov={file} --cov-append --tb=line --pdb {file}",
         "_lint": "make lint"
     },
     "setup.py": {
@@ -28,8 +28,5 @@
         "type": "requirements",
         "alternate": "setup.py",
         "make": "pip install -r requirements.txt"
-    },
-    ".travis.yml": {
-        "type": "travis"
     }
 }
