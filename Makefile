@@ -1,16 +1,17 @@
+include .test.Makefile
+include .lint.Makefile
+
 all: check coverage lint
 
-lint:
-	@flake8 rpn
+venv:
+	@python -m venv venv
 
-check:
-	@flake8 --select=F rpn
+install: venv
+	@./venv/bin/pip install wheel
+	@./venv/bin/pip install -r requirements.txt .
 
-test:
-	@python setup.py test --addopts -vv
-
-coverage:
-	@coverage html
+dev_install: install
+	@./venv/bin/pip install -U -r requirements.dev.txt -e .
 
 clean:
 	@rm -rf .coverage htmlcov
