@@ -1,0 +1,13 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: regex
+    versions:
+    - 2020.11.13
+    - 2021.3.17
